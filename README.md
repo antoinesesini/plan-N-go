@@ -3,7 +3,7 @@
 ## Members
 
 Mohamadou FAYE
-Karim GOULZY
+Karim GZOULY
 Antoine SESINI
 
 
