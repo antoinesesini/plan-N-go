@@ -1,4 +1,4 @@
-# android-project
+# Plan&Go
 
 ## Members
 
