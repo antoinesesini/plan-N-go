@@ -2,7 +2,7 @@
 
 ## Members
 
-Mohamadou FAYE
+Mouhamadou FAYE
 Karim GZOULY
 Antoine SESINI
 
