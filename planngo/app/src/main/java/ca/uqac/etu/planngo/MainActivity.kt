@@ -11,20 +11,21 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.Scaffold
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import ca.uqac.etu.planngo.ui.theme.AppTheme
 import android.preference.PreferenceManager
 import android.widget.Toast
 import androidx.compose.runtime.*
-import org.osmdroid.config.Configuration
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.navigation.NavHost
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.composable
+import ca.uqac.etu.planngo.screens.*
 import androidx.core.app.ActivityCompat
 import ca.uqac.etu.planngo.navigation.BottomNavigationBar
 import ca.uqac.etu.planngo.screens.MapScreen
 import ca.uqac.etu.planngo.screens.MenuScreen
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-
 
 class MainActivity : ComponentActivity() {
 
@@ -36,7 +37,6 @@ class MainActivity : ComponentActivity() {
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -46,31 +46,36 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AppTheme {
+                val navController = rememberNavController()
 
-                Configuration.getInstance().load(applicationContext, PreferenceManager.getDefaultSharedPreferences(applicationContext))
-
-                //Page sélectionnée actuellement
+                // Page sélectionnée actuellement
                 var selectedItemIndex by rememberSaveable {
                     mutableIntStateOf(0)
                 }
 
-                //Interface générale
                 Scaffold(
                     bottomBar = {
                         BottomNavigationBar(
                             selectedIndex = selectedItemIndex,
-                            onItemSelected = { selectedItemIndex = it }
+                            onItemSelected = { selectedItemIndex = it },
+                            onFabClick = { selectedItemIndex = 2 }
                         )
                     }
-                ) {
+                ) { paddingValues ->
                     when (selectedItemIndex) {
-                        0 -> MapScreen(latitude, longitude)  // Page de la carte
-                        1 -> MenuScreen()  // Page du menu
+                        0 -> MapScreen()
+                        1 -> ActiviteScreen()
+                        2 -> PlanScreen()
+                        3 -> ChatBotScreen()
+                        4 -> MenuScreen(navController = navController)
                     }
                 }
+
+
             }
         }
     }
+}
 
     private fun checkPermission():Boolean{
         //this function will return a boolean
