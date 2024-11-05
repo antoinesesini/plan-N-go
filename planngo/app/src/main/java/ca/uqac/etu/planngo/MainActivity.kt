@@ -12,13 +12,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.Scaffold
 import ca.uqac.etu.planngo.ui.theme.AppTheme
-import android.preference.PreferenceManager
 import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.navigation.NavHost
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.compose.composable
 import ca.uqac.etu.planngo.screens.*
 import androidx.core.app.ActivityCompat
 import ca.uqac.etu.planngo.navigation.BottomNavigationBar
@@ -61,9 +58,9 @@ class MainActivity : ComponentActivity() {
                             onFabClick = { selectedItemIndex = 2 }
                         )
                     }
-                ) { paddingValues ->
+                ) {
                     when (selectedItemIndex) {
-                        0 -> MapScreen()
+                        0 -> MapScreen(latitude, longitude)
                         1 -> ActiviteScreen()
                         2 -> PlanScreen()
                         3 -> ChatBotScreen()
@@ -75,8 +72,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
-
     private fun checkPermission():Boolean{
         //this function will return a boolean
         //true: if we have permission
@@ -121,5 +116,4 @@ class MainActivity : ComponentActivity() {
             requestPermission()
         }
     }
-
 }
