@@ -39,7 +39,7 @@ fun BottomNavigationBar(
             unselectedIcon = Icons.Outlined.Map
         ),
         BottomNavigationItem(
-            title = "Activité",
+            title = "Activités",
             selectedIcon = Icons.Filled.List,
             unselectedIcon = Icons.Outlined.List
         ),
