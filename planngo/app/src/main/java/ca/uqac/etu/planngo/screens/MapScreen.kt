@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -20,7 +18,23 @@ import org.osmdroid.views.MapView
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.views.overlay.Marker
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
+import org.osmdroid.events.MapListener
+import org.osmdroid.events.ScrollEvent
+import org.osmdroid.events.ZoomEvent
 
+const val minimalZoomLevel = 12
 
 data class Activity(
     val title: String,
@@ -32,7 +46,6 @@ data class Activity(
 
 enum class ActivityType { MARCHE, SKI, FITNESS, RANDONNEE, KAYAK, FOOTBALL_AMERICAIN, SOCCER }
 
-// Fonction pour obtenir l'icône selon le type d'activité
 fun getIconForType(type: ActivityType): Int {
     return when (type) {
         ActivityType.MARCHE -> R.drawable.walking_icon
@@ -66,6 +79,7 @@ val activities = listOf(
 )
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(latitude: Double, longitude: Double) {
 
@@ -74,41 +88,63 @@ fun MapScreen(latitude: Double, longitude: Double) {
     val context = LocalContext.current
     val mapView = remember { MapView(context) }
     var selectedActivity by remember { mutableStateOf<Activity?>(null) }
+    val userLocationMarker = remember {
+        Marker(mapView).apply {
+            title = "Votre position"
+            icon = ContextCompat.getDrawable(context, R.drawable.location_icon)
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+        }
+    }
+    var zoomLevel by remember { mutableDoubleStateOf(15.00) }
+
+
 
 
     //Rendu de départ
     LaunchedEffect(latitude, longitude) {
         mapView.apply {
-            setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE)
-            setMultiTouchControls(true)
-            controller.setZoom(15.0)
-            controller.setCenter(GeoPoint(latitude, longitude))
 
-
-            val userLocationMarker = Marker(this).apply {
-                position = GeoPoint(latitude, longitude)
-                title = "Votre position"
-                icon = ContextCompat.getDrawable(context, R.drawable.location_icon)
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            }
-            overlays.remove(userLocationMarker)
-            overlays.add(userLocationMarker)
-
-
-            // Ajout de chaque activité comme marqueur avec icône spécifique
-            activities.forEach { activity ->
-                val marker = Marker(this).apply {
-                    position = activity.location
-                    title = activity.title
-                    icon = ContextCompat.getDrawable(context, getIconForType(activity.type))
-                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                    setOnMarkerClickListener { _, _ ->
-                        selectedActivity = activity
-                        true
+            fun markerManager() {
+                overlays.clear()
+                // Ajout de chaque activité comme marqueur avec icône spécifique seulement si le niveau de zoom le permet
+                if (zoomLevel >= minimalZoomLevel) {
+                    activities.forEach { activity ->
+                        val marker = Marker(this).apply {
+                            position = activity.location
+                            title = activity.title
+                            icon = ContextCompat.getDrawable(context, getIconForType(activity.type))
+                            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                            setOnMarkerClickListener { _, _ ->
+                                selectedActivity = activity
+                                true
+                            }
+                        }
+                        overlays.add(marker)
                     }
                 }
-                overlays.add(marker)
+                userLocationMarker.position = GeoPoint(latitude, longitude)
+                overlays.add(userLocationMarker)
             }
+
+            setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE)
+            setMultiTouchControls(true)
+            controller.setZoom(zoomLevel)
+            controller.setCenter(GeoPoint(latitude, longitude))
+
+            markerManager()
+
+            mapView.addMapListener(object : MapListener {
+                override fun onZoom(event: ZoomEvent?): Boolean {
+                    zoomLevel = event?.zoomLevel!!
+                    Log.d("Debug:", zoomLevel.toString())
+                    markerManager()
+                    return true
+                }
+
+                override fun onScroll(event: ScrollEvent?): Boolean {
+                    return false
+                }
+            })
 
         }
     }
@@ -134,21 +170,59 @@ fun MapScreen(latitude: Double, longitude: Double) {
             FloatingSearchBar()
         }
 
+
         // Affichage de la modale si une activité est sélectionnée
         selectedActivity?.let { activity ->
-            AlertDialog(
+            BasicAlertDialog(
                 onDismissRequest = { selectedActivity = null },
-                title = { Text(activity.title) },
-                text = {
-                    Text("Description : ${activity.description}\n" +
-                            "Horaires : ${activity.schedule}")
-                },
-                confirmButton = {
-                    Button(onClick = { selectedActivity = null }) {
-                        Text("Fermer")
+                //buttons = {},
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .background(Color.White)
+                        .padding(16.dp)
+                ) {
+                    Column {
+
+                        // Icone de fermeture en haut à gauche
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            contentAlignment = Alignment.TopStart
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = "Fermer",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable { selectedActivity = null }
+                            )
+                        }
+
+                        // Contenu de la modale
+                        Text(
+                            text = activity.title,
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        Text(
+                            text = "Description : ${activity.description}",
+                            fontSize = 16.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = "Horaires : ${activity.schedule}",
+                            fontSize = 16.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
                     }
                 }
-            )
+            }
         }
     }
 }
