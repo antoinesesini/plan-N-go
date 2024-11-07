@@ -21,7 +21,30 @@ class ActivityViewModel : ViewModel() {
         }
     }
 
-    public fun getActivities(): List<Activity> {
+    fun getActivities(): List<Activity> {
         return activities
     }
+
+    fun addActivity(activity: Activity) {
+        viewModelScope.launch {
+            repository.addActivity(activity)
+            loadActivities()
+        }
+    }
+
+    fun updateActivity(activityId: String, updatedActivity: Activity) {
+        viewModelScope.launch {
+            repository.updateActivity(activityId, updatedActivity)
+            loadActivities()
+        }
+    }
+
+    fun deleteActivity(activityId: String) {
+        viewModelScope.launch {
+            repository.deleteActivity(activityId)
+            loadActivities()
+        }
+    }
+
+
 }
