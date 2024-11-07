@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,11 +33,14 @@ class MainActivity : ComponentActivity() {
     // Utilisation de MutableState pour latitude et longitude
     private var latitude by mutableStateOf(48.4225)
     private var longitude by mutableStateOf(-71.0606)
+    private val authManager = AuthManager()
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        authManager.signInAnonymously()
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         requestPermission()

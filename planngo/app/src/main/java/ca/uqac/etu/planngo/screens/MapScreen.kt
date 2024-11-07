@@ -31,9 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import ca.uqac.etu.planngo.data.Activity
-import ca.uqac.etu.planngo.data.ActivityRepository
-import ca.uqac.etu.planngo.data.ActivityType
+import ca.uqac.etu.planngo.models.Activity
+import ca.uqac.etu.planngo.models.ActivityType
 import ca.uqac.etu.planngo.viewmodel.ActivityViewModel
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
@@ -89,7 +88,7 @@ fun MapScreen(latitude: Double, longitude: Double) {
                     activities.forEach { activity ->
                         val marker = Marker(this).apply {
                             position = activity.location
-                            title = activity.title
+                            title = activity.name
                             icon = ContextCompat.getDrawable(context, getIconForType(activity.type))
                             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                             setOnMarkerClickListener { _, _ ->
@@ -100,8 +99,10 @@ fun MapScreen(latitude: Double, longitude: Double) {
                         overlays.add(marker)
                     }
                 }
+
                 userLocationMarker.position = GeoPoint(latitude, longitude)
                 overlays.add(userLocationMarker)
+
             }
 
             setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE)
@@ -181,7 +182,7 @@ fun MapScreen(latitude: Double, longitude: Double) {
 
                         // Contenu de la modale
                         Text(
-                            text = activity.title,
+                            text = activity.name,
                             fontSize = 20.sp,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(bottom = 8.dp)
@@ -193,7 +194,7 @@ fun MapScreen(latitude: Double, longitude: Double) {
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         Text(
-                            text = "Horaires : ${activity.schedule}",
+                            text = "Horaires : ${activity.hours["start"]} - ${activity.hours["end"]}",
                             fontSize = 16.sp,
                             color = Color.Gray,
                             modifier = Modifier.padding(bottom = 16.dp)

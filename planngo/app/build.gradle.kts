@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -72,6 +73,11 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.navigation.compose)
     implementation (libs.play.services.location)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.google.firebase.firestore)
+    implementation (platform(libs.firebase.bom.v3120))
+    implementation (libs.google.firebase.auth.ktx)
+    implementation (libs.google.firebase.firestore.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

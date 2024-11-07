@@ -2,13 +2,13 @@ package ca.uqac.etu.planngo.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import ca.uqac.etu.planngo.data.Activity
 import kotlinx.coroutines.launch
 import ca.uqac.etu.planngo.data.ActivityRepository
+import ca.uqac.etu.planngo.models.Activity
 
 class ActivityViewModel : ViewModel() {
     private val repository = ActivityRepository()
-    private var activities: List<Activity> = listOf()
+    private var activities: MutableList<Activity> = mutableListOf()
 
     init {
         // Charger les activités lors de l'initialisation
@@ -17,7 +17,7 @@ class ActivityViewModel : ViewModel() {
 
     private fun loadActivities() {
         viewModelScope.launch {
-            activities = repository.getActivities()
+            activities = repository.getAllActivities()
         }
     }
 

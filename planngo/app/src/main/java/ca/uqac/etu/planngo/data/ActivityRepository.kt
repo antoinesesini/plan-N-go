@@ -1,36 +1,228 @@
 package ca.uqac.etu.planngo.data
 
+import android.util.Log
+import ca.uqac.etu.planngo.models.Activity
+import ca.uqac.etu.planngo.models.ActivityType
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import org.osmdroid.util.GeoPoint
 
-data class Activity(
-    val title: String,
-    val description: String,
-    val schedule: String,
-    val location: GeoPoint,
-    val type: ActivityType
-)
-
-enum class ActivityType { MARCHE, SKI, FITNESS, RANDONNEE, KAYAK, FOOTBALL_AMERICAIN, SOCCER }
 
 class ActivityRepository {
-    suspend fun getActivities(): List<Activity> {
-        val activities = listOf(
-            Activity("Balade du matin", "Marche le long de la rivière Saguenay", "07:00 - 08:30", GeoPoint(48.4220, -71.0650), ActivityType.MARCHE),
-            Activity("Ski alpin", "Journée de ski au Mont Édouard", "09:00 - 16:00", GeoPoint(48.3400, -70.8923), ActivityType.SKI),
-            Activity("Séance de fitness", "Entraînement en plein air", "10:00 - 11:00", GeoPoint(48.4300, -71.0500), ActivityType.FITNESS),
-            Activity("Randonnée en montagne", "Exploration du Mont Valin", "08:00 - 14:00", GeoPoint(48.6667, -71.0654), ActivityType.RANDONNEE),
-            Activity("Kayak en rivière", "Descente en kayak sur la rivière", "13:00 - 16:00", GeoPoint(48.5000, -70.9500), ActivityType.KAYAK),
-            Activity("Match de football américain", "Match local au stade Saguenay", "15:00 - 18:00", GeoPoint(48.4320, -71.0520), ActivityType.FOOTBALL_AMERICAIN),
-            Activity("Partie de soccer", "Tournoi de soccer pour adultes", "17:00 - 19:00", GeoPoint(48.4180, -71.0600), ActivityType.SOCCER),
-            Activity("Marche au crépuscule", "Balade dans le parc de la Colline", "18:00 - 19:00", GeoPoint(48.4260, -71.0574), ActivityType.MARCHE),
-            Activity("Ski de fond", "Parcours de ski de fond à Saint-Fulgence", "10:00 - 14:00", GeoPoint(48.4330, -70.9820), ActivityType.SKI),
-            Activity("Session de fitness", "Entraînement de HIIT en plein air", "12:00 - 12:30", GeoPoint(48.4190, -71.0610), ActivityType.FITNESS),
-            Activity("Randonnée en forêt", "Sentier des Amoureux", "09:00 - 11:00", GeoPoint(48.4155, -71.0750), ActivityType.RANDONNEE),
-            Activity("Kayak du soir", "Sortie en kayak au coucher du soleil", "18:00 - 20:00", GeoPoint(48.4305, -71.0605), ActivityType.KAYAK),
-            Activity("Tournoi de football américain", "Tournoi annuel", "14:00 - 18:00", GeoPoint(48.4350, -71.0800), ActivityType.FOOTBALL_AMERICAIN),
-            Activity("Séance de soccer", "Match amical entre amis", "16:00 - 17:30", GeoPoint(48.4285, -71.0530), ActivityType.SOCCER),
-            Activity("Marche avec vue", "Marche au bord du lac Kenogami", "15:00 - 16:30", GeoPoint(48.3760, -71.1200), ActivityType.MARCHE)
-        )
-        return activities
+
+    private val db = Firebase.firestore
+
+
+    fun getAllActivities() : MutableList<Activity> {
+        val resultList : MutableList<Activity> = mutableListOf()
+        val activities = db.collection("activities")
+
+        activities.get()
+            .addOnSuccessListener {snapshot ->
+                for (document in snapshot) {
+
+                    val name = document.getString("name") ?: ""
+
+                    val typeString = document.getString("type") ?: ""
+                    val type = when (typeString) {
+                        "marche" -> ActivityType.MARCHE
+                        "ski" -> ActivityType.SKI
+                        "fitness" -> ActivityType.FITNESS
+                        "randonnee" -> ActivityType.RANDONNEE
+                        "kayak" -> ActivityType.KAYAK
+                        "football_americain" -> ActivityType.FOOTBALL_AMERICAIN
+                        "soccer" -> ActivityType.SOCCER
+                        else -> ActivityType.MARCHE
+                    }
+
+                    val description = document.getString("description") ?: ""
+
+                    val locationGeopoint = document.getGeoPoint("location")
+                    val latitude = locationGeopoint?.latitude ?: 0.0
+                    val longitude = locationGeopoint?.longitude ?: 0.0
+                    val location = GeoPoint(latitude, longitude)
+
+                    val hours = document.get("hours") as? Map<String, String> ?: emptyMap()
+
+                    val duration = document.getLong("duration")?.toInt() ?: 0
+
+                    val difficulty = document.getLong("difficulty")?.toInt() ?: 0
+
+                    val required = document.get("required") as? List<String> ?: emptyList()
+
+                    val pictures = document.get("pictures") as? List<String> ?: emptyList()
+
+                    val activity = Activity(
+                        name = name,
+                        type = type,
+                        description = description,
+                        location = location,
+                        hours = hours,
+                        duration = duration,
+                        difficulty = difficulty,
+                        required = required,
+                        pictures = pictures
+                    )
+                    //Log.d("DB-DEBUG:", activity.toString())
+                    resultList.add(activity)
+                }
+            }
+            .addOnFailureListener {
+                Log.d("DB-DATA", "No activity found")
+            }
+        return resultList
     }
+
+
+
+
+    //private fun addActivities() {
+//
+    //    val activities = listOf(
+    //        mapOf(
+    //            "name" to "Kayak sur la rivière Saguenay",
+    //            "type" to "kayak",
+    //            "description" to "Venez explorer la magnifique rivière Saguenay en kayak, entouré par les paysages exceptionnels de la région.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.4213, -71.0537),
+    //            "hours" to mapOf("start" to "09:00", "end" to "14:00"),
+    //            "duration" to 3,
+    //            "difficulty" to 2,
+    //            "required" to listOf("serviette", "vêtements de rechange"),
+    //            "pictures" to listOf("url_de_l_image_kayak_1.jpg", "url_de_l_image_kayak_2.jpg")
+    //        ),
+    //        mapOf(
+    //            "name" to "Randonnée au Parc national des Monts-Valin",
+    //            "type" to "randonnee",
+    //            "description" to "Explorez les sentiers magnifiques du Parc national des Monts-Valin et admirez les panoramas de la région.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.5135, -70.8861),
+    //            "hours" to mapOf("start" to "08:00", "end" to "16:00"),
+    //            "duration" to 8,
+    //            "difficulty" to 4,
+    //            "required" to listOf("chaussures de randonnée", "sac à dos", "eau", "vêtements appropriés"),
+    //            "pictures" to listOf("url_de_l_image_randonnee_1.jpg", "url_de_l_image_randonnee_2.jpg")
+    //        ),
+    //        mapOf(
+    //            "name" to "Ski au Mont Valin",
+    //            "type" to "ski",
+    //            "description" to "Ski sur les pistes du Mont Valin, une destination prisée pour les amateurs de glisse.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.5067, -70.8449),
+    //            "hours" to mapOf("start" to "09:00", "end" to "16:00"),
+    //            "duration" to 7,
+    //            "difficulty" to 3,
+    //            "required" to listOf("skis", "bâtons", "vêtements d'hiver", "casque"),
+    //            "pictures" to listOf("url_de_l_image_ski_1.jpg", "url_de_l_image_ski_2.jpg")
+    //        ),
+    //        mapOf(
+    //            "name" to "Vélo de montagne à la Vallée du Bras-du-Nord",
+    //            "type" to "fitness",
+    //            "description" to "Parcourez les sentiers de vélo de montagne de la Vallée du Bras-du-Nord, dans un cadre naturel incroyable.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.4603, -71.0654),
+    //            "hours" to mapOf("start" to "10:00", "end" to "13:00"),
+    //            "duration" to 3,
+    //            "difficulty" to 3,
+    //            "required" to listOf("vélo de montagne", "casque", "gants"),
+    //            "pictures" to listOf("url_de_l_image_velo_1.jpg", "url_de_l_image_velo_2.jpg")
+    //        ),
+    //        mapOf(
+    //            "name" to "Randonnée en raquettes au Parc de la Rivière-du-Moulin",
+    //            "type" to "randonnee",
+    //            "description" to "Profitez des sentiers de raquettes au Parc de la Rivière-du-Moulin, un endroit idéal pour l'hiver.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.4400, -71.0783),
+    //            "hours" to mapOf("start" to "10:00", "end" to "14:00"),
+    //            "duration" to 4,
+    //            "difficulty" to 2,
+    //            "required" to listOf("raquettes", "vêtements d'hiver", "gants", "bonnet"),
+    //            "pictures" to listOf("url_de_l_image_raquette_1.jpg", "url_de_l_image_raquette_2.jpg")
+    //        ),
+    //        mapOf(
+    //            "name" to "Football américain à la Plaine des Sports",
+    //            "type" to "football_americain",
+    //            "description" to "Joignez-vous à une partie de football américain sur les terrains de la Plaine des Sports de Chicoutimi.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.4172, -71.0623),
+    //            "hours" to mapOf("start" to "14:00", "end" to "16:00"),
+    //            "duration" to 2,
+    //            "difficulty" to 2,
+    //            "required" to listOf("ballon de football", "chaussures de sport", "équipement de protection"),
+    //            "pictures" to listOf("url_de_l_image_football_1.jpg", "url_de_l_image_football_2.jpg")
+    //        ),
+    //        mapOf(
+    //            "name" to "Soccer au Parc Richelieu",
+    //            "type" to "soccer",
+    //            "description" to "Participez à un match de soccer amical au Parc Richelieu, un lieu populaire à Chicoutimi.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.4216, -71.0685),
+    //            "hours" to mapOf("start" to "17:00", "end" to "19:00"),
+    //            "duration" to 2,
+    //            "difficulty" to 2,
+    //            "required" to listOf("ballon de soccer", "chaussures de sport", "maillot"),
+    //            "pictures" to listOf("url_de_l_image_soccer_1.jpg", "url_de_l_image_soccer_2.jpg")
+    //        ),
+    //        mapOf(
+    //            "name" to "Escalade au Mont Chicoutimi",
+    //            "type" to "fitness",
+    //            "description" to "Venez tester vos capacités en escalade au Mont Chicoutimi, un endroit idéal pour les amateurs de sensations fortes.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.3987, -71.0394),
+    //            "hours" to mapOf("start" to "08:00", "end" to "12:00"),
+    //            "duration" to 4,
+    //            "difficulty" to 4,
+    //            "required" to listOf("chaussures d'escalade", "harnais", "casque"),
+    //            "pictures" to listOf("url_de_l_image_escalade_1.jpg", "url_de_l_image_escalade_2.jpg")
+    //        ),
+    //        mapOf(
+    //            "name" to "Running au Parc du Saguenay",
+    //            "type" to "marche",
+    //            "description" to "Profitez des sentiers de course du Parc du Saguenay, un excellent choix pour les coureurs débutants et expérimentés.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.4362, -71.0555),
+    //            "hours" to mapOf("start" to "06:30", "end" to "08:00"),
+    //            "duration" to 1,
+    //            "difficulty" to 1,
+    //            "required" to listOf("chaussures de course", "vêtements légers"),
+    //            "pictures" to listOf("url_de_l_image_running_1.jpg", "url_de_l_image_running_2.jpg")
+    //        ),
+    //        mapOf(
+    //            "name" to "Yoga au bord de l'eau",
+    //            "type" to "fitness",
+    //            "description" to "Participez à une session de yoga en plein air au bord de la rivière Saguenay.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.4235, -71.0518),
+    //            "hours" to mapOf("start" to "07:30", "end" to "08:30"),
+    //            "duration" to 1,
+    //            "difficulty" to 1,
+    //            "required" to listOf("tapis de yoga", "vêtements confortables"),
+    //            "pictures" to listOf("url_de_l_image_yoga_1.jpg", "url_de_l_image_yoga_2.jpg")
+    //        ),
+    //        mapOf(
+    //            "name" to "Pêche au lac Saint-Jean",
+    //            "type" to "marche",
+    //            "description" to "Venez passer une journée calme à pêcher au lac Saint-Jean.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.7000, -71.3000),
+    //            "hours" to mapOf("start" to "06:00", "end" to "18:00"),
+    //            "duration" to 12,
+    //            "difficulty" to 1,
+    //            "required" to listOf("canne à pêche", "appâts", "chapeau"),
+    //            "pictures" to listOf("url_de_l_image_peche_1.jpg", "url_de_l_image_peche_2.jpg")
+    //        ),
+    //        mapOf(
+    //            "name" to "Canoë-kayak au lac Kénogami",
+    //            "type" to "kayak",
+    //            "description" to "Découvrez le lac Kénogami en canoë ou kayak, un lieu paisible et idéal pour les sorties en famille.",
+    //            "location" to com.google.firebase.firestore.GeoPoint(48.4667, -71.1700),
+    //            "hours" to mapOf("start" to "10:00", "end" to "14:00"),
+    //            "duration" to 4,
+    //            "difficulty" to 2,
+    //            "required" to listOf("pagaie", "gilet de sauvetage"),
+    //            "pictures" to listOf("url_de_l_image_canoe_1.jpg", "url_de_l_image_canoe_2.jpg")
+    //        )
+    //    )
+//
+    //    // Pousser les activités dans Firestore
+    //    activities.forEach { activity ->
+    //        db.collection("activities")
+    //            .add(activity)
+    //            .addOnSuccessListener {
+    //                Log.d("Firestore", "Activity added successfully!")
+    //            }
+    //            .addOnFailureListener { exception ->
+    //                Log.w("Firestore", "Error adding activity", exception)
+    //            }
+    //    }
+    //}
 }
