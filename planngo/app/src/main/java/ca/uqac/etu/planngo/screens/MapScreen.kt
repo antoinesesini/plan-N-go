@@ -1,50 +1,61 @@
 package ca.uqac.etu.planngo.screens
 
 import android.util.Log
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
-import ca.uqac.etu.planngo.R
-import ca.uqac.etu.planngo.components.FloatingSearchBar
-import org.osmdroid.views.MapView
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.views.overlay.Marker
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import ca.uqac.etu.planngo.R
+import ca.uqac.etu.planngo.components.FloatingSearchBar
+import ca.uqac.etu.planngo.models.Activity
+import ca.uqac.etu.planngo.models.ActivityType
+import ca.uqac.etu.planngo.viewmodel.ActivityViewModel
+import coil.compose.AsyncImage
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 
 const val minimalZoomLevel = 12
 
-data class Activity(
-    val title: String,
-    val description: String,
-    val schedule: String,
-    val location: GeoPoint,
-    val type: ActivityType
-)
-
-enum class ActivityType { MARCHE, SKI, FITNESS, RANDONNEE, KAYAK, FOOTBALL_AMERICAIN, SOCCER }
 
 fun getIconForType(type: ActivityType): Int {
     return when (type) {
@@ -59,32 +70,9 @@ fun getIconForType(type: ActivityType): Int {
 }
 
 
-// Liste d'activités avec différents types
-val activities = listOf(
-    Activity("Balade du matin", "Marche le long de la rivière Saguenay", "07:00 - 08:30", GeoPoint(48.4220, -71.0650), ActivityType.MARCHE),
-    Activity("Ski alpin", "Journée de ski au Mont Édouard", "09:00 - 16:00", GeoPoint(48.3400, -70.8923), ActivityType.SKI),
-    Activity("Séance de fitness", "Entraînement en plein air", "10:00 - 11:00", GeoPoint(48.4300, -71.0500), ActivityType.FITNESS),
-    Activity("Randonnée en montagne", "Exploration du Mont Valin", "08:00 - 14:00", GeoPoint(48.6667, -71.0654), ActivityType.RANDONNEE),
-    Activity("Kayak en rivière", "Descente en kayak sur la rivière", "13:00 - 16:00", GeoPoint(48.5000, -70.9500), ActivityType.KAYAK),
-    Activity("Match de football américain", "Match local au stade Saguenay", "15:00 - 18:00", GeoPoint(48.4320, -71.0520), ActivityType.FOOTBALL_AMERICAIN),
-    Activity("Partie de soccer", "Tournoi de soccer pour adultes", "17:00 - 19:00", GeoPoint(48.4180, -71.0600), ActivityType.SOCCER),
-    Activity("Marche au crépuscule", "Balade dans le parc de la Colline", "18:00 - 19:00", GeoPoint(48.4260, -71.0574), ActivityType.MARCHE),
-    Activity("Ski de fond", "Parcours de ski de fond à Saint-Fulgence", "10:00 - 14:00", GeoPoint(48.4330, -70.9820), ActivityType.SKI),
-    Activity("Session de fitness", "Entraînement de HIIT en plein air", "12:00 - 12:30", GeoPoint(48.4190, -71.0610), ActivityType.FITNESS),
-    Activity("Randonnée en forêt", "Sentier des Amoureux", "09:00 - 11:00", GeoPoint(48.4155, -71.0750), ActivityType.RANDONNEE),
-    Activity("Kayak du soir", "Sortie en kayak au coucher du soleil", "18:00 - 20:00", GeoPoint(48.4305, -71.0605), ActivityType.KAYAK),
-    Activity("Tournoi de football américain", "Tournoi annuel", "14:00 - 18:00", GeoPoint(48.4350, -71.0800), ActivityType.FOOTBALL_AMERICAIN),
-    Activity("Séance de soccer", "Match amical entre amis", "16:00 - 17:30", GeoPoint(48.4285, -71.0530), ActivityType.SOCCER),
-    Activity("Marche avec vue", "Marche au bord du lac Kenogami", "15:00 - 16:30", GeoPoint(48.3760, -71.1200), ActivityType.MARCHE)
-)
-
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(latitude: Double, longitude: Double) {
 
-    Log.d("Debug:", latitude.toString())
-    Log.d("Debug:", longitude.toString())
     val context = LocalContext.current
     val mapView = remember { MapView(context) }
     var selectedActivity by remember { mutableStateOf<Activity?>(null) }
@@ -93,17 +81,20 @@ fun MapScreen(latitude: Double, longitude: Double) {
             title = "Votre position"
             icon = ContextCompat.getDrawable(context, R.drawable.location_icon)
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+            setOnMarkerClickListener { _, _ ->
+                true  // Retourner true pour empêcher l'interaction
+            }
         }
     }
     var zoomLevel by remember { mutableDoubleStateOf(15.00) }
+    val activityViewModel: ActivityViewModel = viewModel()
+    val activities = activityViewModel.getActivities()
 
-
-
-
-    //Rendu de départ
+    // Rendu
     LaunchedEffect(latitude, longitude) {
         mapView.apply {
 
+            //Gestion des marqueurs
             fun markerManager() {
                 overlays.clear()
                 // Ajout de chaque activité comme marqueur avec icône spécifique seulement si le niveau de zoom le permet
@@ -111,7 +102,7 @@ fun MapScreen(latitude: Double, longitude: Double) {
                     activities.forEach { activity ->
                         val marker = Marker(this).apply {
                             position = activity.location
-                            title = activity.title
+                            title = activity.name
                             icon = ContextCompat.getDrawable(context, getIconForType(activity.type))
                             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                             setOnMarkerClickListener { _, _ ->
@@ -122,17 +113,18 @@ fun MapScreen(latitude: Double, longitude: Double) {
                         overlays.add(marker)
                     }
                 }
+
                 userLocationMarker.position = GeoPoint(latitude, longitude)
                 overlays.add(userLocationMarker)
             }
 
+            //Quelques autres paramètres de la carte
             setTileSource(TileSourceFactory.DEFAULT_TILE_SOURCE)
             setMultiTouchControls(true)
             controller.setZoom(zoomLevel)
             controller.setCenter(GeoPoint(latitude, longitude))
 
             markerManager()
-
             mapView.addMapListener(object : MapListener {
                 override fun onZoom(event: ZoomEvent?): Boolean {
                     zoomLevel = event?.zoomLevel!!
@@ -145,52 +137,64 @@ fun MapScreen(latitude: Double, longitude: Double) {
                     return false
                 }
             })
-
         }
     }
 
 
-
-
-
-
-
-
-
-    //Rendu
+    // Rendu de la carte
     Box(modifier = Modifier.fillMaxSize()) {
-        // Affichage de la carte OpenStreetMap
-        AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize())
+        AndroidView(
+            factory = { mapView },
+            modifier =
+            Modifier
+                .fillMaxSize()
+        )
 
-        // Affichage de la barre de recherche
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
+            // Barre de recherche
             FloatingSearchBar()
+
+           //// Bouton d'ajout d'activité (en haut à droite)
+           //Icon(
+           //    imageVector = Icons.Filled.Add,  // Icône d'ajout
+           //    contentDescription = "Ajouter une activité",
+           //    modifier = Modifier
+           //        .size(36.dp)
+           //        .align(Alignment.End)  // Positionné en haut à droite
+           //        .clickable {}
+           //)
         }
 
-
-        // Affichage de la modale si une activité est sélectionnée
         selectedActivity?.let { activity ->
-            BasicAlertDialog(
-                onDismissRequest = { selectedActivity = null },
-                //buttons = {},
-                modifier = Modifier.padding(16.dp)
+
+            val pagerState = rememberPagerState(pageCount = { activity.pictures.size })
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
                         .background(Color.White)
                         .padding(16.dp)
+                        .fillMaxWidth(0.85f)
                 ) {
-                    Column {
-
-                        // Icone de fermeture en haut à gauche
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Icône de fermeture
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 8.dp),
-                            contentAlignment = Alignment.TopStart
+                                .padding(bottom = 16.dp),
+                            contentAlignment = Alignment.TopEnd
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Close,
@@ -198,31 +202,88 @@ fun MapScreen(latitude: Double, longitude: Double) {
                                 modifier = Modifier
                                     .size(24.dp)
                                     .clickable { selectedActivity = null }
+                                    .padding(8.dp)
                             )
                         }
 
-                        // Contenu de la modale
+                        // Icône de l'activité
+                        Icon(
+                            painter = painterResource(id = getIconForType(activity.type)),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .padding(bottom = 16.dp),
+                            tint = Color.Unspecified
+                        )
+
+                        // Titre de l'activité
                         Text(
-                            text = activity.title,
-                            fontSize = 20.sp,
+                            text = activity.name,
+                            fontSize = 22.sp,
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            modifier = Modifier.padding(bottom = 12.dp)
                         )
-                        Text(
-                            text = "Description : ${activity.description}",
-                            fontSize = 16.sp,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        Text(
-                            text = "Horaires : ${activity.schedule}",
-                            fontSize = 16.sp,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
+
+                        // Carrousel d'images
+                        if (activity.pictures.isNotEmpty()) {
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier
+                                    .height(250.dp)
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) { page ->
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
+                                        .background(Color.LightGray)
+                                ) {
+                                    AsyncImage(
+                                        model = activity.pictures[page],
+                                        contentDescription = "Image de l'activité",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .fillMaxSize(),
+                                        error = painterResource(id = R.drawable.custom_logo),
+                                        placeholder = painterResource(id = R.drawable.custom_logo)
+                                    )
+                                }
+                            }
+                        }
+
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Informations textuelles de l'activité
+                        listOf(
+                            "Description : ${activity.description}",
+                            "Horaires : ${activity.hours["start"]} - ${activity.hours["end"]}",
+                            "Durée : ${activity.duration} heure(s)",
+                            "Difficulté : ${activity.difficulty}/5"
+                        ).forEach { text ->
+                            Text(
+                                text = text,
+                                fontSize = 16.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
+
+                        // Équipements requis
+                        if (activity.required.isNotEmpty()) {
+                            Text(
+                                text = "Équipements requis : ${activity.required.joinToString(", ")}",
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.secondary,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
                     }
                 }
             }
         }
     }
 }
+

@@ -32,11 +32,14 @@ class MainActivity : ComponentActivity() {
     // Utilisation de MutableState pour latitude et longitude
     private var latitude by mutableStateOf(48.4225)
     private var longitude by mutableStateOf(-71.0606)
+    private val authManager = AuthManager()
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        authManager.signInAnonymously()
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         requestPermission()
@@ -101,16 +104,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkPermission():Boolean{
-        //this function will return a boolean
-        //true: if we have permission
-        //false if not
         return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
     }
 
     private fun requestPermission(){
-        //this function will allows us to tell the user to requesut the necessary permsiion if they are not garented
         ActivityCompat.requestPermissions(this, arrayOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION),
@@ -119,8 +118,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun isLocationEnabled():Boolean{
-        //this function will return to us the state of the location service
-        //if the gps or the network provider is enabled then it will return true otherwise it will return false
         val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
