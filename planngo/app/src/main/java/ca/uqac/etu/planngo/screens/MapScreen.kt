@@ -2,13 +2,19 @@ package ca.uqac.etu.planngo.screens
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -24,7 +30,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -37,6 +45,7 @@ import ca.uqac.etu.planngo.components.FloatingSearchBar
 import ca.uqac.etu.planngo.models.Activity
 import ca.uqac.etu.planngo.models.ActivityType
 import ca.uqac.etu.planngo.viewmodel.ActivityViewModel
+import coil.compose.AsyncImage
 import org.osmdroid.events.MapListener
 import org.osmdroid.events.ScrollEvent
 import org.osmdroid.events.ZoomEvent
@@ -67,7 +76,6 @@ fun MapScreen(latitude: Double, longitude: Double) {
     val context = LocalContext.current
     val mapView = remember { MapView(context) }
     var selectedActivity by remember { mutableStateOf<Activity?>(null) }
-    var showAddActivityModal by remember { mutableStateOf(false) }
     val userLocationMarker = remember {
         Marker(mapView).apply {
             title = "Votre position"
@@ -150,65 +158,21 @@ fun MapScreen(latitude: Double, longitude: Double) {
             // Barre de recherche
             FloatingSearchBar()
 
-            // Bouton d'ajout d'activité (en haut à droite)
-            Icon(
-                imageVector = Icons.Filled.Add,  // Icône d'ajout
-                contentDescription = "Ajouter une activité",
-                modifier = Modifier
-                    .size(36.dp)
-                    .align(Alignment.End)  // Positionné en haut à droite
-                    .clickable {
-                        showAddActivityModal = true  // Affiche le modal d'ajout d'activité
-                    }
-            )
-        }
-
-        if (showAddActivityModal) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .background(Color.White)
-                        .padding(16.dp)
-                        .fillMaxWidth(0.85f)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        // Icône de fermeture
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            contentAlignment = Alignment.TopEnd
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Close,
-                                contentDescription = "Fermer",
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable { showAddActivityModal = false }
-                                    .padding(8.dp)  // Un peu de padding autour de l'icône
-                            )
-                        }
-
-                        Text(
-                            text = "Cette fonctionnalité pour ajouter une activité sera ajoutée ultérieurement.",
-                            fontSize = 18.sp,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-                    }
-                }
-            }
+           //// Bouton d'ajout d'activité (en haut à droite)
+           //Icon(
+           //    imageVector = Icons.Filled.Add,  // Icône d'ajout
+           //    contentDescription = "Ajouter une activité",
+           //    modifier = Modifier
+           //        .size(36.dp)
+           //        .align(Alignment.End)  // Positionné en haut à droite
+           //        .clickable {}
+           //)
         }
 
         selectedActivity?.let { activity ->
+
+            val pagerState = rememberPagerState(pageCount = { activity.pictures.size })
+
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -242,7 +206,7 @@ fun MapScreen(latitude: Double, longitude: Double) {
                             )
                         }
 
-                        // Icone de l'activité
+                        // Icône de l'activité
                         Icon(
                             painter = painterResource(id = getIconForType(activity.type)),
                             contentDescription = null,
@@ -259,6 +223,38 @@ fun MapScreen(latitude: Double, longitude: Double) {
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(bottom = 12.dp)
                         )
+
+                        // Carrousel d'images
+                        if (activity.pictures.isNotEmpty()) {
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier
+                                    .height(250.dp)
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) { page ->
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
+                                        .background(Color.LightGray)
+                                ) {
+                                    AsyncImage(
+                                        model = activity.pictures[page],
+                                        contentDescription = "Image de l'activité",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .fillMaxSize(),
+                                        error = painterResource(id = R.drawable.custom_logo),
+                                        placeholder = painterResource(id = R.drawable.custom_logo)
+                                    )
+                                }
+                            }
+                        }
+
+
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         // Informations textuelles de l'activité
                         listOf(
