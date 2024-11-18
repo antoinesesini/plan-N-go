@@ -18,9 +18,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import ca.uqac.etu.planngo.data.AddressToCoordinates
 import ca.uqac.etu.planngo.models.Activity
 import ca.uqac.etu.planngo.models.ActivityType
 import ca.uqac.etu.planngo.viewmodel.ActivityViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
 
 @Composable
@@ -29,26 +33,21 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var type by remember { mutableStateOf(ActivityType.MARCHE) }
-    var latitude by remember { mutableStateOf("") }
-    var longitude by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
     var difficulty by remember { mutableIntStateOf(1) }
     val requiredItems = remember { mutableStateListOf<String>() }
     var newItem by remember { mutableStateOf("") }
-
-    // Variables pour les heures d'ouverture
     var startHour by remember { mutableStateOf("") }
     var endHour by remember { mutableStateOf("") }
 
-    // Variables pour la direction (N, S, E, O)
-    var directionLatitude by remember { mutableStateOf("N") }
-    var directionLongitude by remember { mutableStateOf("E") }
-
+    //Dialogues d'affichage
+    var showAddressErrorDialog by remember { mutableStateOf(false) }
     var showConfirmationDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
 
     fun validateFields(): Boolean {
-        if (name.isBlank() || startHour.isBlank() || endHour.isBlank() || duration.isBlank()) {
+        if (name.isBlank() || startHour.isBlank() || endHour.isBlank() || duration.isBlank() || address.isBlank()) {
             return false
         }
         return true
@@ -62,23 +61,31 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
             return
         }
 
-        val finalLatitude = (latitude.toDoubleOrNull() ?: 0.0) * if (directionLatitude == "S") -1 else 1
-        val finalLongitude = (longitude.toDoubleOrNull() ?: 0.0) * if (directionLongitude == "O") -1 else 1
-        val location = GeoPoint(finalLatitude, finalLongitude)
+        // Utiliser la fonction getAdresseFromCoordinates pour obtenir les coordonnées de localisation
+        CoroutineScope(Dispatchers.Main).launch {
+            val coordinates: Pair<Double,Double>? = AddressToCoordinates().getCoordinatesFromAddress(address)
+            if (coordinates == null) {
+                showAddressErrorDialog = true
+            } else {
+                val location = GeoPoint(coordinates.first, coordinates.second)
 
-        val newActivity = Activity(
-            name = name,
-            type = type,
-            description = description,
-            location = location,
-            hours = mapOf("start" to startHour, "end" to endHour),
-            duration = duration.toIntOrNull() ?: 0,
-            difficulty = difficulty,
-            required = requiredItems,
-            pictures = listOf()
-        )
-        activityViewModel.addActivity(newActivity)
-        showConfirmationDialog = true
+                val newActivity = Activity(
+                    name = name,
+                    type = type,
+                    description = description,
+                    location = location,
+                    hours = mapOf("start" to startHour, "end" to endHour),
+                    duration = duration.toIntOrNull() ?: 0,
+                    difficulty = difficulty,
+                    required = requiredItems,
+                    pictures = listOf()
+                )
+                activityViewModel.addActivity(newActivity)
+                showConfirmationDialog = true
+            }
+        }
+
+
     }
 
     Scaffold { paddingValues ->
@@ -139,39 +146,12 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Champs pour les coordonnées (latitude et longitude)
+                // Champ pour l'adresse
                 OutlinedTextField(
-                    value = latitude,
-                    onValueChange = { newLatitude ->
-                        latitude = newLatitude
-                                    },
-                    label = { Text("Latitude") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                DropdownMenuDirectionLatitude(
-                    selectedDirection = directionLatitude,
-                    onDirectionSelected = { newDirection -> directionLatitude = newDirection }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = longitude,
-                    onValueChange = { newLongitude ->
-                        longitude = newLongitude
-                                    },
-                    label = { Text("Longitude") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
-                )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                DropdownMenuDirectionLongitude(
-                    selectedDirection = directionLongitude,
-                    onDirectionSelected = { newDirection -> directionLongitude = newDirection }
+                    value = address,
+                    onValueChange = { address = it },
+                    label = { Text("Adresse") },
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -301,6 +281,19 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
             )
         }
 
+        if (showAddressErrorDialog) {
+            AlertDialog(
+                onDismissRequest = { showAddressErrorDialog = false },
+                title = { Text("Erreur") },
+                text = { Text("Impossible de trouver les coordonnées pour l'adresse saisie.") },
+                confirmButton = {
+                    TextButton(onClick = { showAddressErrorDialog = false }) {
+                        Text("OK")
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }
 
@@ -329,66 +322,6 @@ fun DropdownMenuActivityType(
                     onTypeSelected(type)
                     expanded = false }
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun DropdownMenuDirectionLatitude(
-    selectedDirection: String,
-    onDirectionSelected: (String) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Box {
-        OutlinedButton(
-            onClick = { expanded = !expanded },
-            //modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = selectedDirection)
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            listOf("N", "S").forEach { direction ->
-                DropdownMenuItem(
-                    text = {Text(direction) },
-                    onClick = {
-                    onDirectionSelected(direction)
-                    expanded = false
-                })
-            }
-        }
-    }
-}
-
-@Composable
-fun DropdownMenuDirectionLongitude(
-    selectedDirection: String,
-    onDirectionSelected: (String) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Box {
-        OutlinedButton(
-            onClick = { expanded = !expanded },
-            //modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = selectedDirection)
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            listOf("E", "O").forEach { direction ->
-                DropdownMenuItem(
-                    text = {Text(direction) },
-                    onClick = {
-                        onDirectionSelected(direction)
-                        expanded = false
-                    })
             }
         }
     }
