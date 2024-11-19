@@ -367,7 +367,7 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text(text = "Share")
+                        Text(text = "Partager")
                     }
                 }
             }
