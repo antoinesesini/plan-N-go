@@ -80,19 +80,14 @@ fun MenuContent(innerNavController: NavController) {
             SettingsSection(title = "Planification") {
                 SettingsItem(
                     icon = Icons.Filled.CalendarToday,
-                    title = "Calendrier",
+                    title = "Calendrier de mes planifications",
                     onClick = { innerNavController.navigate("calendar") }
                 )
-                SettingsItem(
-                    icon = Icons.Filled.Group,
-                    title = "Invitations",
-                    onClick = { innerNavController.navigate("invitations") }
-                )
-                SettingsItem(
-                    icon = Icons.Filled.Place,
-                    title = "Lieux",
-                    onClick = { innerNavController.navigate("locations") }
-                )
+//                SettingsItem(
+//                    icon = Icons.Filled.Place,
+//                    title = "Lieux",
+//                    onClick = { innerNavController.navigate("locations") }
+//                )
             }
         }
 
@@ -111,20 +106,20 @@ fun MenuContent(innerNavController: NavController) {
             }
         }
 
-        item {
-            SettingsSection(title = "Communication") {
-                SettingsItem(
-                    icon = Icons.Filled.Chat,
-                    title = "Discussions",
-                    onClick = { innerNavController.navigate("discussions") }
-                )
-                SettingsItem(
-                    icon = Icons.Filled.Notifications,
-                    title = "Notifications",
-                    onClick = { innerNavController.navigate("notifications") }
-                )
-            }
-        }
+//        item {
+//            SettingsSection(title = "Communication") {
+//                SettingsItem(
+//                    icon = Icons.Filled.Chat,
+//                    title = "Discussions",
+//                    onClick = { innerNavController.navigate("discussions") }
+//                )
+//                SettingsItem(
+//                    icon = Icons.Filled.Notifications,
+//                    title = "Notifications",
+//                    onClick = { innerNavController.navigate("notifications") }
+//                )
+//            }
+//        }
 
         item {
             SettingsSection(title = "Paramètres") {
@@ -133,11 +128,11 @@ fun MenuContent(innerNavController: NavController) {
                     title = "Préférences",
                     onClick = { innerNavController.navigate("preferences") }
                 )
-                SettingsItem(
-                    icon = Icons.Filled.ExitToApp,
-                    title = "Déconnexion",
-                    onClick = { innerNavController.navigate("logout") }
-                )
+//                SettingsItem(
+//                    icon = Icons.Filled.ExitToApp,
+//                    title = "Déconnexion",
+//                    onClick = { innerNavController.navigate("logout") }
+//                )
             }
         }
     }
