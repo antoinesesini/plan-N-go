@@ -68,7 +68,7 @@ fun MenuContent(innerNavController: NavController) {
             SettingsSection(title = "Planification") {
                 SettingsItem(
                     icon = Icons.Filled.CalendarToday,
-                    title = "Calendrier",
+                    title = "Calendrier de mes planifications",
                     onClick = { innerNavController.navigate("calendar") }
                 )
             }
@@ -83,7 +83,6 @@ fun MenuContent(innerNavController: NavController) {
                 )
             }
         }
-
         item {
             SettingsSection(title = "Paramètres") {
                 SettingsItem(

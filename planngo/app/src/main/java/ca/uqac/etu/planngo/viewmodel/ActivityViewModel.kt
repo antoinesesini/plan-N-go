@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ca.uqac.etu.planngo.data.ActivityRepository
 import ca.uqac.etu.planngo.models.Activity
+import ca.uqac.etu.planngo.models.ActivityType
 
 class ActivityViewModel : ViewModel() {
     private val repository = ActivityRepository()
@@ -46,5 +47,8 @@ class ActivityViewModel : ViewModel() {
         }
     }
 
+    fun getActivityTypes(): List<ActivityType> {
+        return activities.map { it.type }.distinct()
+    }
 
 }
