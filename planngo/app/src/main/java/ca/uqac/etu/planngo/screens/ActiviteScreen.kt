@@ -1,5 +1,6 @@
 package ca.uqac.etu.planngo.screens
 
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -33,13 +34,14 @@ import ca.uqac.etu.planngo.viewmodel.ActivityViewModel
 import coil.compose.rememberAsyncImagePainter
 import kotlin.math.absoluteValue
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import kotlin.Int
 
 @Composable
 fun ActiviteScreen() {
     val activityViewModel: ActivityViewModel = viewModel()
 
-    var selectedCategory by remember { mutableStateOf("Tous") }
+    var selectedCategory by remember { mutableStateOf("Toutes") }
 
     Column(
         modifier = Modifier
@@ -59,7 +61,7 @@ fun ActiviteScreen() {
         ActivityCategory(activityViewModel, selectedCategory) { category ->
             selectedCategory = category
         }
-        val activities = if (selectedCategory == "Tous") {
+        val activities = if (selectedCategory == "Toutes") {
             activityViewModel.getActivities()
         } else {
             activityViewModel.getActivities().filter { it.type.toString() == selectedCategory }
@@ -132,13 +134,13 @@ fun ActivityCategory(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(horizontal = 8.dp),
     ) {
-        // Bouton "Tous"
+        // Bouton "Toutes"
         item {
             CategoryButton(
-                text = "Tous",
+                text = "Toutes",
                 icon = painterResource(id = R.drawable.custom_logo),
-                isSelected = selectedCategory == "Tous",
-                onClick = { onCategorySelected("Tous") }
+                isSelected = selectedCategory == "Toutes",
+                onClick = { onCategorySelected("Toutes") }
             )
         }
         // Boutons pour chaque catégorie
@@ -229,6 +231,7 @@ fun ActivityCarrousel(activities: List<Activity>) {
 @Composable
 fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
     val pageOffset = (pagerState.currentPage - index) + pagerState.currentPageOffsetFraction
+    val context = LocalContext.current
 
     Card(
         modifier = Modifier
@@ -307,7 +310,7 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
                 Text(
-                    text = "Durée : ${activity.duration} mins",
+                    text = "Durée : ${activity.duration} heure(s)",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
@@ -320,7 +323,37 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
-                        onClick = { /* Action pour partager */ },
+                        onClick = {
+                            val shareMessage = """
+    🏞️ -- Découvrez une nouvelle activité à essayer ! -- 🏞️
+    
+    👉Nom : ${activity.name}
+    
+    👉Type : ${activity.type.name}
+    
+    👉Description : ${activity.description}
+    
+    👉Lieu : Latitude ${activity.location.latitude}, Longitude ${activity.location.longitude}
+    
+    👉Horaires : ${activity.hours["start"] ?: "Non spécifié"} - ${activity.hours["end"] ?: "Non spécifié"}
+    
+    👉Durée : ${activity.duration} heure(s)
+    
+    👉Difficulté : ${activity.difficulty}/5
+    
+    ${if (activity.required.isNotEmpty()) "\uD83D\uDC49Équipement requis : ${activity.required.joinToString(", ")}" else ""}
+    
+    Participez et vivez une expérience inoubliable ! 🎉
+""".trimIndent()
+                            val shareIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(
+                                    Intent.EXTRA_TEXT,shareMessage
+                                )
+                                type = "text/plain"
+                            }
+                            context.startActivity(Intent.createChooser(shareIntent, "Choisis ton app 😀"))
+                        },
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -336,7 +369,6 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(text = "Share")
                     }
-
                 }
             }
         }
