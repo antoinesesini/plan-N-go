@@ -39,7 +39,7 @@ fun MenuScreen(navController: NavController) {
                 MenuContent(innerNavController)
             }
             composable("calendar") { CalendarScreen(navController = innerNavController) }
-            composable("create_activity") { CreateActivityScreen() }
+            composable("create_activity") { CreateActivityScreen(navController = innerNavController) }
             composable("preferences") { PreferencesScreen() }
         }
     }
