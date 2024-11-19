@@ -7,7 +7,7 @@
     <item name="windowSplashScreenBackground">#BCF0B4</item>
     <item name="windowSplashScreenAnimatedIcon">@drawable/splash_screen</item>
     <item name="postSplashScreenTheme">@style/Theme.PlanNGo</item>
-    <item name="windowSplashScreenAnimationDuration">3000</item>
+    <item name="windowSplashScreenAnimationDuration">1000</item>
 </style>
 
 </resources>
