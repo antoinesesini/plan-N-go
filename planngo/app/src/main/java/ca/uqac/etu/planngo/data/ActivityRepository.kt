@@ -28,8 +28,23 @@ class ActivityRepository {
                         "kayak" -> ActivityType.KAYAK
                         "football_americain" -> ActivityType.FOOTBALL_AMERICAIN
                         "soccer" -> ActivityType.SOCCER
+                        "yoga" -> ActivityType.YOGA
+                        "running" -> ActivityType.RUNNING
+                        "velo" -> ActivityType.VELO
+                        "escalade" -> ActivityType.ESCALADE
+                        "natation" -> ActivityType.NATATION
+                        "tennis" -> ActivityType.TENNIS
+                        "combat" -> ActivityType.COMBAT
+                        "volleyball" -> ActivityType.VOLLEYBALL
+                        "handball" -> ActivityType.HANDBALL
+                        "hockey" -> ActivityType.HOCKEY
+                        "raquettes" -> ActivityType.RAQUETTES
+                        "motoneige" -> ActivityType.MOTONEIGE
+                        "chien_de_traineau" -> ActivityType.CHIEN_DE_TRAINEAU
+                        "peche" -> ActivityType.PECHE
                         else -> ActivityType.MARCHE
                     }
+
 
                     val description = document.getString("description") ?: ""
                     val locationGeopoint = document.getGeoPoint("location")

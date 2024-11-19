@@ -66,6 +66,20 @@ fun getIconForType(type: ActivityType): Int {
         ActivityType.KAYAK -> R.drawable.kayaking_icon
         ActivityType.FOOTBALL_AMERICAIN -> R.drawable.football_icon
         ActivityType.SOCCER -> R.drawable.soccer_icon
+        ActivityType.VELO -> R.drawable.biking_icon
+        ActivityType.ESCALADE -> R.drawable.climbing_icon
+        ActivityType.COMBAT -> R.drawable.fighting_icon
+        ActivityType.HANDBALL -> R.drawable.handball_icon
+        ActivityType.HOCKEY -> R.drawable.hockey_icon
+        ActivityType.RUNNING -> R.drawable.running_icon
+        ActivityType.CHIEN_DE_TRAINEAU -> R.drawable.sleddog_icon
+        ActivityType.MOTONEIGE -> R.drawable.snowmobile_icon
+        ActivityType.RAQUETTES -> R.drawable.snowshoeing_icon
+        ActivityType.NATATION -> R.drawable.swimming_icon
+        ActivityType.TENNIS -> R.drawable.tennis_icon
+        ActivityType.VOLLEYBALL-> R.drawable.volleyball_icon
+        ActivityType.YOGA -> R.drawable.yoga_icon
+        ActivityType.PECHE -> R.drawable.fishing_icon
     }
 }
 

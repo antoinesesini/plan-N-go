@@ -22,12 +22,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import ca.uqac.etu.planngo.screens.menuScreens.CalendarScreen
 import ca.uqac.etu.planngo.screens.menuScreens.CreateActivityScreen
-import ca.uqac.etu.planngo.screens.menuScreens.DiscussionsScreen
-import ca.uqac.etu.planngo.screens.menuScreens.InvitationsScreen
-import ca.uqac.etu.planngo.screens.menuScreens.LocationsScreen
-import ca.uqac.etu.planngo.screens.menuScreens.LogoutScreen
-import ca.uqac.etu.planngo.screens.menuScreens.MyActivitiesScreen
-import ca.uqac.etu.planngo.screens.menuScreens.NotificationsScreen
 import ca.uqac.etu.planngo.screens.menuScreens.PreferencesScreen
 
 @Composable
@@ -45,14 +39,8 @@ fun MenuScreen(navController: NavController) {
                 MenuContent(innerNavController)
             }
             composable("calendar") { CalendarScreen(navController = innerNavController) }
-            composable("invitations") { InvitationsScreen() }
-            composable("locations") { LocationsScreen() }
-            composable("my_activities") { MyActivitiesScreen() }
-            composable("create_activity") { CreateActivityScreen() }
-            composable("discussions") { DiscussionsScreen() }
-            composable("notifications") { NotificationsScreen() }
+            composable("create_activity") { CreateActivityScreen(navController = innerNavController) }
             composable("preferences") { PreferencesScreen() }
-            composable("logout") { LogoutScreen() }
         }
     }
 }
@@ -83,21 +71,11 @@ fun MenuContent(innerNavController: NavController) {
                     title = "Calendrier de mes planifications",
                     onClick = { innerNavController.navigate("calendar") }
                 )
-//                SettingsItem(
-//                    icon = Icons.Filled.Place,
-//                    title = "Lieux",
-//                    onClick = { innerNavController.navigate("locations") }
-//                )
             }
         }
 
         item {
             SettingsSection(title = "Gestion des Activités") {
-                SettingsItem(
-                    icon = Icons.Filled.List,
-                    title = "Mes Activités",
-                    onClick = { innerNavController.navigate("my_activities") }
-                )
                 SettingsItem(
                     icon = Icons.Filled.Add,
                     title = "Créer une Activité",
@@ -105,22 +83,6 @@ fun MenuContent(innerNavController: NavController) {
                 )
             }
         }
-
-//        item {
-//            SettingsSection(title = "Communication") {
-//                SettingsItem(
-//                    icon = Icons.Filled.Chat,
-//                    title = "Discussions",
-//                    onClick = { innerNavController.navigate("discussions") }
-//                )
-//                SettingsItem(
-//                    icon = Icons.Filled.Notifications,
-//                    title = "Notifications",
-//                    onClick = { innerNavController.navigate("notifications") }
-//                )
-//            }
-//        }
-
         item {
             SettingsSection(title = "Paramètres") {
                 SettingsItem(
@@ -128,11 +90,6 @@ fun MenuContent(innerNavController: NavController) {
                     title = "Préférences",
                     onClick = { innerNavController.navigate("preferences") }
                 )
-//                SettingsItem(
-//                    icon = Icons.Filled.ExitToApp,
-//                    title = "Déconnexion",
-//                    onClick = { innerNavController.navigate("logout") }
-//                )
             }
         }
     }

@@ -80,6 +80,7 @@ dependencies {
     implementation (libs.accompanist.pager)
     implementation (libs.accompanist.pager.indicators)
     implementation (libs.coil.compose)
+    implementation(libs.okhttp)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
