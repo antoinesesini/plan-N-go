@@ -1,5 +1,12 @@
 package ca.uqac.etu.planngo.screens
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.RadialGradient
+import android.graphics.Shader
+import android.graphics.drawable.BitmapDrawable
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,9 +21,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,8 +40,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -53,6 +63,8 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import androidx.compose.ui.graphics.Color
+
 
 const val minimalZoomLevel = 12
 
@@ -104,6 +116,48 @@ fun MapScreen(latitude: Double, longitude: Double) {
     val activityViewModel: ActivityViewModel = viewModel()
     val activities = activityViewModel.getActivities()
 
+
+
+    val iconCache = mutableMapOf<Int, Bitmap>()
+    fun getCircularIconWithBackground(drawableRes: Int, context: Context): Bitmap {
+        // Vérifiez si l'icône est déjà dans le cache
+        iconCache[drawableRes]?.let { return it }
+
+        val drawable = ContextCompat.getDrawable(context, drawableRes) ?: return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+        val size = maxOf(drawable.intrinsicWidth, drawable.intrinsicHeight)
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        // Dessiner un dégradé radial vert
+        val radius = size / 2f
+        val gradient = RadialGradient(
+            radius,
+            radius,
+            radius,
+            android.graphics.Color.parseColor("#A8E6CF"),
+            android.graphics.Color.parseColor("#56AB2F"),
+            Shader.TileMode.CLAMP
+        )
+
+        val paint = Paint().apply {
+            isAntiAlias = true
+            shader = gradient
+        }
+        canvas.drawCircle(radius, radius, radius, paint)
+
+        // Dessiner l'icône au centre
+        drawable.setBounds(0, 0, size, size)
+        drawable.draw(canvas)
+
+        // Ajouter l'icône générée dans le cache
+        iconCache[drawableRes] = bitmap
+
+        return bitmap
+    }
+
+
+
+
     // Rendu
     LaunchedEffect(latitude, longitude) {
         mapView.apply {
@@ -114,10 +168,11 @@ fun MapScreen(latitude: Double, longitude: Double) {
                 // Ajout de chaque activité comme marqueur avec icône spécifique seulement si le niveau de zoom le permet
                 if (zoomLevel >= minimalZoomLevel) {
                     activities.forEach { activity ->
+                        val circularIcon = getCircularIconWithBackground(getIconForType(activity.type), context)
                         val marker = Marker(this).apply {
                             position = activity.location
                             title = activity.name
-                            icon = ContextCompat.getDrawable(context, getIconForType(activity.type))
+                            icon = BitmapDrawable(context.resources, circularIcon)
                             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                             setOnMarkerClickListener { _, _ ->
                                 selectedActivity = activity
@@ -210,14 +265,22 @@ fun MapScreen(latitude: Double, longitude: Double) {
                                 .padding(bottom = 16.dp),
                             contentAlignment = Alignment.TopEnd
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.Close,
-                                contentDescription = "Fermer",
+                            Box(
                                 modifier = Modifier
-                                    .size(24.dp)
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0x66000000))
                                     .clickable { selectedActivity = null }
-                                    .padding(8.dp)
-                            )
+                                    .padding(8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = "Fermer",
+                                    modifier = Modifier.size(32.dp),
+                                    tint = Color.White
+                                )
+                            }
                         }
 
                         // Icône de l'activité
@@ -240,32 +303,76 @@ fun MapScreen(latitude: Double, longitude: Double) {
 
                         // Carrousel d'images
                         if (activity.pictures.isNotEmpty()) {
-                            HorizontalPager(
-                                state = pagerState,
+                            Box(
                                 modifier = Modifier
                                     .height(250.dp)
                                     .fillMaxWidth()
                                     .padding(vertical = 8.dp)
-                            ) { page ->
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
-                                        .background(Color.LightGray)
-                                ) {
-                                    AsyncImage(
-                                        model = activity.pictures[page],
-                                        contentDescription = "Image de l'activité",
-                                        contentScale = ContentScale.Crop,
+                            ) {
+                                // Carrousel d'images
+                                HorizontalPager(
+                                    state = pagerState,
+                                    modifier = Modifier.fillMaxSize()
+                                ) { page ->
+                                    Box(
                                         modifier = Modifier
-                                            .fillMaxSize(),
-                                        error = painterResource(id = R.drawable.custom_logo),
-                                        placeholder = painterResource(id = R.drawable.custom_logo)
-                                    )
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .border(1.dp, Color.Gray, RoundedCornerShape(12.dp))
+                                            .background(Color.LightGray)
+                                    ) {
+                                        AsyncImage(
+                                            model = activity.pictures[page],
+                                            contentDescription = "Image de l'activité",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize(),
+                                            error = painterResource(id = R.drawable.custom_logo),
+                                            placeholder = painterResource(id = R.drawable.custom_logo)
+                                        )
+                                    }
+                                }
+
+                                // Flèche gauche
+                                if (pagerState.currentPage > 0) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.CenterStart)
+                                            .size(40.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0x99000000))
+                                            .padding(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.ArrowBack,
+                                            contentDescription = "Swipe gauche possible",
+                                            modifier = Modifier.size(24.dp),
+                                            tint = Color.White
+                                        )
+                                    }
+                                }
+
+                                // Flèche droite
+                                if (pagerState.currentPage < activity.pictures.lastIndex) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.CenterEnd)
+                                            .size(40.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0x99000000))
+                                            .padding(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.ArrowForward,
+                                            contentDescription = "Swipe droite possible",
+                                            modifier = Modifier.size(24.dp),
+                                            tint = Color.White
+                                        )
+                                    }
                                 }
                             }
                         }
+
+
 
 
                         Spacer(modifier = Modifier.height(16.dp))
