@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
                         0 -> MapScreen(latitude, longitude)
                         1 -> ActiviteScreen()
                         2 -> PlanScreen()
-                        3 -> ChatBotScreen()
+                        3 -> CalendarScreen()
                         4 -> MenuScreen(navController = navController, darkTheme = darkTheme, onDarkThemeToggle = {
                                 isChecked -> darkTheme = isChecked
                         })

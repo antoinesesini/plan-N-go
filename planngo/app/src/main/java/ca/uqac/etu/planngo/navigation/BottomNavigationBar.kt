@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ChatBubble
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.ChatBubble
+import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Menu
@@ -44,9 +44,9 @@ fun BottomNavigationBar(
             unselectedIcon = Icons.Outlined.List
         ),
         BottomNavigationItem(
-            title = "ChatBot",
-            selectedIcon = Icons.Filled.ChatBubble,
-            unselectedIcon = Icons.Outlined.ChatBubble
+            title = "Mes planifications",
+            selectedIcon = Icons.Filled.CalendarToday,
+            unselectedIcon = Icons.Outlined.CalendarToday
         ),
         BottomNavigationItem(
             title = "Menu",

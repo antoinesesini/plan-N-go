@@ -13,7 +13,10 @@ import ca.uqac.etu.planngo.viewmodel.ActivityViewModel
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.ui.platform.LocalContext
+import ca.uqac.etu.planngo.data.LocalStorage
+import ca.uqac.etu.planngo.models.DayPlan
 import java.util.Calendar
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -31,6 +34,8 @@ fun PlanScreen() {
     val context = LocalContext.current
     val activityViewModel = ActivityViewModel()
     val activities = activityViewModel.getActivities()
+
+    val scope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -69,7 +74,6 @@ fun PlanScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Time Picker
             Button(onClick = {
                 TimePickerDialog(
                     context,
@@ -90,7 +94,6 @@ fun PlanScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Duration Slider
             Text(
                 text = "Durée (en heures) : $duration",
                 style = MaterialTheme.typography.bodyLarge,
@@ -111,9 +114,7 @@ fun PlanScreen() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Button to plan activities
             Button(onClick = {
-                // Validation
                 isDateError = date.isEmpty()
                 isTimeError = startTime.isEmpty()
                 isDurationError = duration <= 0
@@ -121,6 +122,16 @@ fun PlanScreen() {
                 if (!isDateError && !isTimeError && !isDurationError) {
                     plannedActivities = planActivities(activities, duration, startTime)
                     showModal = true
+
+                    // Sauvegarde des activités planifiées
+                    val newDayPlan = DayPlan(
+                        date = date,
+                        startTime = startTime,
+                        activities = plannedActivities
+                    )
+                    scope.launch {
+                        LocalStorage.addPlannedDay(context, newDayPlan)
+                    }
                 }
             }) {
                 Text("Découvrir ...")

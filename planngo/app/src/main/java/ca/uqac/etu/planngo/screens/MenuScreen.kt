@@ -20,7 +20,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import ca.uqac.etu.planngo.screens.menuScreens.CalendarScreen
 import ca.uqac.etu.planngo.screens.menuScreens.CreateActivityScreen
 import ca.uqac.etu.planngo.screens.menuScreens.PreferencesScreen
 
@@ -38,7 +37,6 @@ fun MenuScreen(navController: NavController, darkTheme: Boolean, onDarkThemeTogg
             composable("menu") {
                 MenuContent(innerNavController)
             }
-            composable("calendar") { CalendarScreen(navController = innerNavController) }
             composable("create_activity") { CreateActivityScreen(navController = innerNavController) }
             composable("preferences") {
                 PreferencesScreen(
@@ -69,16 +67,6 @@ fun MenuContent(innerNavController: NavController) {
                 modifier = Modifier
                     .padding(vertical = 16.dp)
             )
-        }
-
-        item {
-            SettingsSection(title = "Planification") {
-                SettingsItem(
-                    icon = Icons.Filled.CalendarToday,
-                    title = "Calendrier de mes planifications",
-                    onClick = { innerNavController.navigate("calendar") }
-                )
-            }
         }
 
         item {
