@@ -1,25 +1,34 @@
 package ca.uqac.etu.planngo.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import ca.uqac.etu.planngo.models.Activity
 import ca.uqac.etu.planngo.viewmodel.ActivityViewModel
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import androidx.compose.ui.platform.LocalContext
+import java.util.Calendar
+
 
 @Composable
 fun PlanScreen() {
-    var date by remember { mutableStateOf(TextFieldValue()) }
-    var startTime by remember { mutableStateOf(TextFieldValue()) }
+    var date by remember { mutableStateOf(String()) }
+    var startTime by remember { mutableStateOf(String()) }
     var duration by remember { mutableIntStateOf(2) } // duration is an integer
     var showModal by remember { mutableStateOf(false) }
     var plannedActivities by remember { mutableStateOf<List<String>>(emptyList()) }
+    var isDateError by remember { mutableStateOf(false) }
+    var isTimeError by remember { mutableStateOf(false) }
+    var isDurationError by remember { mutableStateOf(false) }
 
+    val calendar = Calendar.getInstance()
+    val context = LocalContext.current
     val activityViewModel = ActivityViewModel()
     val activities = activityViewModel.getActivities()
 
@@ -31,42 +40,95 @@ fun PlanScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            PromotionBanner()
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = date,
-                onValueChange = { date = it },
-                label = { Text("Date (DD-MM-YYYY)") }
+            Text(
+                text = "Plannification de journées 🤖",
+                fontSize = 27.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 30.dp, start = 10.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = startTime,
-                onValueChange = { startTime = it },
-                label = { Text("Heure de début (HH:mm)") }
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = duration.toString(),
-                onValueChange = { newValue ->
-                    val newDuration = newValue.toIntOrNull()
-                    if (newDuration != null) {
-                        duration = newDuration
-                    }
-                },
-                label = { Text("Durée (en heures)") },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Date Picker
             Button(onClick = {
-                // Logique pour planifier les activités
-                plannedActivities = planActivities(activities, duration)
-                showModal = true
+                DatePickerDialog(
+                    context,
+                    { _, year, month, dayOfMonth ->
+                        val formattedDate = String.format("%02d-%02d-%d", dayOfMonth, month + 1, year)
+                        date = formattedDate
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                ).show()
             }) {
-                Text("Planifier")
+                Text(if (date.isEmpty()) "Sélectionner une date" else "Date : $date")
+            }
+            if (isDateError) {
+                Text("Veuillez sélectionner une date.", color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Time Picker
+            Button(onClick = {
+                TimePickerDialog(
+                    context,
+                    { _, hourOfDay, minute ->
+                        val formattedTime = String.format("%02d:%02d", hourOfDay, minute)
+                        startTime = formattedTime
+                    },
+                    calendar.get(Calendar.HOUR_OF_DAY),
+                    calendar.get(Calendar.MINUTE),
+                    true // 24-hour format
+                ).show()
+            }) {
+                Text(if (startTime.isEmpty()) "Sélectionner une heure" else "Heure : $startTime")
+            }
+            if (isTimeError) {
+                Text("Veuillez sélectionner une heure.", color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Duration Slider
+            Text(
+                text = "Durée (en heures) : $duration",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Slider(
+                value = duration.toFloat(),
+                onValueChange = { newValue ->
+                    duration = newValue.toInt()
+                },
+                valueRange = 1f..12f,
+                steps = 11,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            if (isDurationError) {
+                Text("Veuillez sélectionner une durée valide.", color = MaterialTheme.colorScheme.error)
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Button to plan activities
+            Button(onClick = {
+                // Validation
+                isDateError = date.isEmpty()
+                isTimeError = startTime.isEmpty()
+                isDurationError = duration <= 0
+
+                if (!isDateError && !isTimeError && !isDurationError) {
+                    plannedActivities = planActivities(activities, duration, startTime)
+                    showModal = true
+                }
+            }) {
+                Text("Découvrir ...")
             }
         }
     }
 
+    // Modal
     if (showModal) {
         AlertDialog(
             onDismissRequest = { showModal = false },
@@ -75,7 +137,7 @@ fun PlanScreen() {
                     Text("Fermer")
                 }
             },
-            title = { Text("Suggestions pour la journée du ${date.text} à partir de ${startTime.text}") },
+            title = { Text("Suggestions pour la journée du ${date} à partir de ${startTime}") },
             text = {
                 Column {
                     for (activity in plannedActivities) {
@@ -87,16 +149,34 @@ fun PlanScreen() {
     }
 }
 
-fun planActivities(activities: List<Activity>, duration: Int): List<String> {
+fun planActivities(activities: List<Activity>, duration: Int, startTime: String): List<String> {
     val plannedActivities = mutableListOf<String>()
 
-    // Utiliser la durée sous forme d'entier directement
+    // Convertir startTime en minutes pour comparaison
+    val (startHour, startMinute) = startTime.split(":").map { it.toInt() }
+    val startInMinutes = startHour * 60 + startMinute
+
     for (activity in activities) {
-        if (activity.duration <= duration) {
-            val activityInfo = "${activity.name} - ${activity.hours["start"]} - ${activity.hours["end"]}"
-            plannedActivities.add(activityInfo)
+        // Convertir les horaires de l'activité en minutes
+        val activityStart = activity.hours["start"]?.split(":")?.map { it.toInt() }
+        val activityEnd = activity.hours["end"]?.split(":")?.map { it.toInt() }
+
+        if (activityStart != null && activityEnd != null) {
+            val activityStartInMinutes = activityStart[0] * 60 + activityStart[1]
+            val activityEndInMinutes = activityEnd[0] * 60 + activityEnd[1]
+
+            // Vérifier si l'activité correspond à la durée disponible et aux horaires
+            if (
+                activity.duration <= duration &&
+                startInMinutes >= activityStartInMinutes &&
+                startInMinutes + (duration * 60) <= activityEndInMinutes
+            ) {
+                val activityInfo = "${activity.name} - ${activity.hours["start"]} - ${activity.hours["end"]}"
+                plannedActivities.add(activityInfo)
+            }
         }
     }
 
     return plannedActivities
 }
+
