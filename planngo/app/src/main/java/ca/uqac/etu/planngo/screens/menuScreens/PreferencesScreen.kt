@@ -1,69 +1,86 @@
 package ca.uqac.etu.planngo.screens.menuScreens
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Brightness4
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ca.uqac.etu.planngo.screens.SettingsItem
-import ca.uqac.etu.planngo.screens.SettingsSection
-
+import androidx.navigation.NavController
 
 @Composable
-fun PreferencesScreen() {
+fun PreferencesScreen(
+    navController : NavController,
+    darkTheme: Boolean,
+    onDarkThemeToggle: (Boolean) -> Unit
+) {
+    var isDarkTheme by remember { mutableStateOf(darkTheme) }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.Start
     ) {
-        item { Spacer(modifier = Modifier.height(16.dp)) }
-
         item {
-            Text(
-                text = "Préférences",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
+            Row(
                 modifier = Modifier
-                    .padding(vertical = 16.dp)
-            )
-        }
-
-        item {
-            SettingsSection(title = "Général") {
-                SettingsItem(
-                    icon = Icons.Filled.LocationOn,
-                    title = "Accès aux données de localisation",
-                    onClick = {},
-                    hasToggle = true
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { navController.navigateUp() }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Retour",
+                        tint = Color.Black
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Préférences et réglages",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
             }
         }
 
         item {
-            SettingsSection(title = "Personnalisation") {
-                SettingsItem(
-                    icon = Icons.Filled.Brightness4,
-                    title = "Mode sombre",
-                    onClick = {},
-                    hasToggle = true
-                )
-                SettingsItem(
-                    icon = Icons.Filled.Language,
-                    title = "Langue de l'application",
-                    onClick = {}
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Mode sombre", style = MaterialTheme.typography.bodyLarge)
+                Switch(
+                    checked = isDarkTheme,
+                    onCheckedChange = { isChecked ->
+                        isDarkTheme = isChecked
+                        onDarkThemeToggle(isDarkTheme)
+                    }
                 )
             }
         }
-        item { Spacer(modifier = Modifier.height(32.dp)) }
+
+        item {
+            fun resetPreferences() {
+                isDarkTheme = false
+                onDarkThemeToggle(isDarkTheme)
+            }
+
+            Button(onClick = { resetPreferences() }) {
+                Text(text = "Réinitialiser les paramètres")
+            }
+        }
     }
 }

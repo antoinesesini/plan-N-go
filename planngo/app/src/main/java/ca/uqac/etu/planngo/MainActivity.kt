@@ -34,6 +34,8 @@ class MainActivity : ComponentActivity() {
     private var longitude by mutableStateOf(-71.0606)
     private val authManager = AuthManager()
 
+    private var darkTheme by mutableStateOf(false)
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +58,7 @@ class MainActivity : ComponentActivity() {
                 )
 
         setContent {
-            AppTheme {
+            AppTheme(darkTheme = darkTheme) {
                 val navController = rememberNavController()
 
                 // Page sélectionnée actuellement
@@ -78,7 +80,9 @@ class MainActivity : ComponentActivity() {
                         1 -> ActiviteScreen()
                         2 -> PlanScreen()
                         3 -> ChatBotScreen()
-                        4 -> MenuScreen(navController = navController)
+                        4 -> MenuScreen(navController = navController, darkTheme = darkTheme, onDarkThemeToggle = {
+                                isChecked -> darkTheme = isChecked
+                        })
                     }
                 }
 

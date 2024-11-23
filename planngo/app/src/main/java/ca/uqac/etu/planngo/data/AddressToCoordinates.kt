@@ -10,15 +10,12 @@ import org.json.JSONArray
 class AddressToCoordinates {
 
     private val client = OkHttpClient()
-    // Utilisation de l'API GeoCodeMaps, à retirer
-    private val API_KEY = "673b8b390cab3100947019epj4cf033"
-
 
     suspend fun getCoordinatesFromAddress(address: String): Pair<Double, Double>? {
         return withContext(Dispatchers.IO) {
             // Remplacer les espaces par des "+" pour l'URL
             val urlAddress = address.replace(" ", "+")
-            val url = "https://geocode.maps.co/search?q=$urlAddress&api_key=$API_KEY"
+            val url = "https://nominatim.openstreetmap.org/search?q=$urlAddress&format=json&addressdetails=1&limit=1"
             Log.d("ADDRESS (Url API):", url)
 
             // Construire la requête HTTP

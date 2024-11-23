@@ -25,7 +25,7 @@ import ca.uqac.etu.planngo.screens.menuScreens.CreateActivityScreen
 import ca.uqac.etu.planngo.screens.menuScreens.PreferencesScreen
 
 @Composable
-fun MenuScreen(navController: NavController) {
+fun MenuScreen(navController: NavController, darkTheme: Boolean, onDarkThemeToggle: (Boolean)-> Unit) {
     val innerNavController = rememberNavController()
 
     Box(
@@ -40,7 +40,14 @@ fun MenuScreen(navController: NavController) {
             }
             composable("calendar") { CalendarScreen(navController = innerNavController) }
             composable("create_activity") { CreateActivityScreen(navController = innerNavController) }
-            composable("preferences") { PreferencesScreen() }
+            composable("preferences") {
+                PreferencesScreen(
+                    navController = innerNavController,
+                    darkTheme = darkTheme,
+                    onDarkThemeToggle = { isDarkThemeEnabled ->
+                        onDarkThemeToggle(isDarkThemeEnabled)
+                    })
+            }
         }
     }
 }
@@ -87,7 +94,7 @@ fun MenuContent(innerNavController: NavController) {
             SettingsSection(title = "Paramètres") {
                 SettingsItem(
                     icon = Icons.Filled.Settings,
-                    title = "Préférences",
+                    title = "Préférences et réglages",
                     onClick = { innerNavController.navigate("preferences") }
                 )
             }

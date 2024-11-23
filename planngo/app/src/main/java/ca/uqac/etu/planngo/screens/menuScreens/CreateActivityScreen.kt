@@ -1,8 +1,8 @@
 package ca.uqac.etu.planngo.screens.menuScreens
 
+import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -12,8 +12,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.osmdroid.util.GeoPoint
+import java.util.Calendar
 
 @Composable
 fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), navController: NavController) {
@@ -34,7 +35,7 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
     var description by remember { mutableStateOf("") }
     var type by remember { mutableStateOf(ActivityType.MARCHE) }
     var address by remember { mutableStateOf("") }
-    var duration by remember { mutableStateOf("") }
+    var duration by remember { mutableIntStateOf(1) }
     var difficulty by remember { mutableIntStateOf(1) }
     val requiredItems = remember { mutableStateListOf<String>() }
     var newItem by remember { mutableStateOf("") }
@@ -46,8 +47,11 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
     var showConfirmationDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+
     fun validateFields(): Boolean {
-        if (name.isBlank() || startHour.isBlank() || endHour.isBlank() || duration.isBlank() || address.isBlank()) {
+        if (name.isBlank() || startHour.isBlank() || endHour.isBlank() || address.isBlank()) {
             return false
         }
         return true
@@ -75,7 +79,7 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
                     description = description,
                     location = location,
                     hours = mapOf("start" to startHour, "end" to endHour),
-                    duration = duration.toIntOrNull() ?: 0,
+                    duration = duration,
                     difficulty = difficulty,
                     required = requiredItems,
                     pictures = listOf()
@@ -95,7 +99,6 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
                 .padding(paddingValues)
         ) {
             item {
-                // Barre d'outils personnalisée avec flèche de retour
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -156,14 +159,16 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Champ pour la durée
-                OutlinedTextField(
-                    value = duration,
-                    onValueChange = { duration = it },
-                    label = { Text("Durée (en heures)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+
+                // Duration Slider
+                Slider(
+                    value = duration.toFloat(),
+                    onValueChange = { duration = it.toInt() },
+                    valueRange = 1f..12f,
+                    steps = 11,
                     modifier = Modifier.fillMaxWidth()
                 )
+                Text(text = "Durée (heures) : $duration")
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -179,25 +184,39 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Heures d'ouverture
+                // Heure d'ouverture
                 Text("Horaires", style = MaterialTheme.typography.titleMedium)
-                OutlinedTextField(
-                    value = startHour,
-                    onValueChange = { startHour = it },
-                    label = { Text("Heure d'ouverture (ex : 09:00)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text), // Change à Text
-                    modifier = Modifier.fillMaxWidth()
-                )
 
+                Button(onClick = {
+                    TimePickerDialog(
+                        context,
+                        { _, hourOfDay, minute ->
+                            val formattedTime = String.format("%02d:%02d", hourOfDay, minute)
+                            startHour = formattedTime
+                        },
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        true // 24-hour format
+                    ).show()
+                }) {
+                    Text(if (startHour.isEmpty()) "Heure d'ouverture" else "Ouverture : $startHour")
+                }
                 Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = endHour,
-                    onValueChange = { endHour = it },
-                    label = { Text("Heure de fermeture (ex : 18:00)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text), // Change à Text
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Button(onClick = {
+                    TimePickerDialog(
+                        context,
+                        { _, hourOfDay, minute ->
+                            val formattedTime = String.format("%02d:%02d", hourOfDay, minute)
+                            endHour = formattedTime
+                        },
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        true // 24-hour format
+                    ).show()
+                }) {
+                    Text(if (endHour.isEmpty()) "Heure de fermeture" else "Fermeture : $endHour")
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
