@@ -2,7 +2,6 @@ package ca.uqac.etu.planngo.screens.menuScreens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -10,18 +9,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import ca.uqac.etu.planngo.data.LocalStorage
+import kotlinx.coroutines.launch
 
 @Composable
 fun PreferencesScreen(
-    navController : NavController,
+    navController: NavController,
     darkTheme: Boolean,
-    onDarkThemeToggle: (Boolean) -> Unit
+    onDarkThemeToggle: (Boolean) -> Unit,
 ) {
     var isDarkTheme by remember { mutableStateOf(darkTheme) }
+    var showConfirmationDialog by remember { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     LazyColumn(
         modifier = Modifier
@@ -73,14 +79,38 @@ fun PreferencesScreen(
         }
 
         item {
-            fun resetPreferences() {
-                isDarkTheme = false
-                onDarkThemeToggle(isDarkTheme)
-            }
-
-            Button(onClick = { resetPreferences() }) {
-                Text(text = "Réinitialiser les paramètres")
+            Button(
+                onClick = { showConfirmationDialog = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+                Text(text = "Effacer les données locales")
             }
         }
+    }
+
+    // Affichage de la boîte de dialogue de confirmation
+    if (showConfirmationDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmationDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    scope.launch {
+                        LocalStorage.clearAllData(context)
+                        showConfirmationDialog = false
+                    }
+                }) {
+                    Text("Confirmer")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmationDialog = false }) {
+                    Text("Annuler")
+                }
+            },
+            title = { Text("Effacement des données") },
+            text = { Text("Êtes-vous sûr de vouloir effacer toutes les données locales ? Cette action est irréversible.") }
+        )
     }
 }

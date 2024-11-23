@@ -52,6 +52,13 @@ object LocalStorage {
         }
     }
 
+    // Effacer toutes les journées planifiées
+    suspend fun clearAllData(context: Context) {
+        context.dataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
+
     // Sauvegarder les journées planifiées
     private suspend fun savePlannedDays(context: Context, days: List<DayPlan>) {
         val json = gson.toJson(days)
