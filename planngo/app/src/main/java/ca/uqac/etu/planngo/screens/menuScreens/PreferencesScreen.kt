@@ -17,24 +17,28 @@ import androidx.navigation.NavController
 import ca.uqac.etu.planngo.data.LocalStorage
 import kotlinx.coroutines.launch
 
+// Écran des préférences utilisateur
 @Composable
 fun PreferencesScreen(
     navController: NavController,
     darkTheme: Boolean,
     onDarkThemeToggle: (Boolean) -> Unit,
 ) {
+    // Variables d'état pour le mode sombre et la boîte de dialogue de confirmation
     var isDarkTheme by remember { mutableStateOf(darkTheme) }
     var showConfirmationDialog by remember { mutableStateOf(false) }
 
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
+    val scope = rememberCoroutineScope() // CoroutineScope pour les actions asynchrones
+    val context = LocalContext.current // Contexte local pour l'accès à LocalStorage
 
+    // Liste déroulante affichant les préférences
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.Start
     ) {
+        // En-tête avec bouton retour et titre
         item {
             Row(
                 modifier = Modifier
@@ -59,6 +63,7 @@ fun PreferencesScreen(
             }
         }
 
+        // Option pour activer/désactiver le mode sombre
         item {
             Row(
                 modifier = Modifier
@@ -78,6 +83,7 @@ fun PreferencesScreen(
             }
         }
 
+        // Bouton pour effacer les données locales
         item {
             Button(
                 onClick = { showConfirmationDialog = true },
@@ -90,11 +96,12 @@ fun PreferencesScreen(
         }
     }
 
-    // Affichage de la boîte de dialogue de confirmation
+    // Affichage de la boîte de dialogue de confirmation de suppression des données
     if (showConfirmationDialog) {
         AlertDialog(
             onDismissRequest = { showConfirmationDialog = false },
             confirmButton = {
+                // Action de confirmation pour effacer les données
                 TextButton(onClick = {
                     scope.launch {
                         LocalStorage.clearAllData(context)
@@ -105,6 +112,7 @@ fun PreferencesScreen(
                 }
             },
             dismissButton = {
+                // Bouton d'annulation
                 TextButton(onClick = { showConfirmationDialog = false }) {
                     Text("Annuler")
                 }

@@ -37,6 +37,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import kotlin.Int
 
+// Screen principale affichant les activités et la bannière de promotion
 @Composable
 fun ActiviteScreen() {
     val activityViewModel: ActivityViewModel = viewModel()
@@ -48,7 +49,7 @@ fun ActiviteScreen() {
             .fillMaxSize()
             .padding(horizontal = 2.dp)
     ) {
-
+        // Titre principal
         Text(
             text = "Activités",
             fontSize = 27.sp,
@@ -58,9 +59,11 @@ fun ActiviteScreen() {
         Spacer(modifier = Modifier.height(8.dp))
         PromotionBanner()
         Spacer(modifier = Modifier.height(8.dp))
+        // Affiche les catégories et gère la sélection
         ActivityCategory(activityViewModel, selectedCategory) { category ->
             selectedCategory = category
         }
+        // Filtre les activités selon la catégorie sélectionnée
         val activities = if (selectedCategory == "Toutes") {
             activityViewModel.getActivities()
         } else {
@@ -70,6 +73,7 @@ fun ActiviteScreen() {
     }
 }
 
+// Bannière promotionnelle en haut de l'écran
 @Composable
 fun PromotionBanner() {
     Card(
@@ -89,7 +93,7 @@ fun PromotionBanner() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Texte à gauche
+            // Texte promotionnel à gauche
             Column(
                 modifier = Modifier
                     .padding(start = 16.dp)
@@ -108,7 +112,7 @@ fun PromotionBanner() {
                 )
             }
 
-            // Image à droite
+            // Image illustrative à droite
             Image(
                 painter = painterResource(id = R.drawable.parc),
                 contentDescription = "parc",
@@ -121,6 +125,7 @@ fun PromotionBanner() {
     }
 }
 
+// Liste déroulante pour choisir une catégorie d'activité
 @Composable
 fun ActivityCategory(
     activityViewModel: ActivityViewModel,
@@ -134,7 +139,7 @@ fun ActivityCategory(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(horizontal = 8.dp),
     ) {
-        // Bouton "Toutes"
+        // Bouton pour afficher toutes les catégories
         item {
             CategoryButton(
                 text = "Toutes",
@@ -143,7 +148,7 @@ fun ActivityCategory(
                 onClick = { onCategorySelected("Toutes") }
             )
         }
-        // Boutons pour chaque catégorie
+        // Boutons pour chaque catégorie spécifique
         items(types.size) { index ->
             val category = types[index]
             val iconPainter = painterResource(id = getIconForType(category))
@@ -157,6 +162,7 @@ fun ActivityCategory(
     }
 }
 
+// Bouton individuel pour une catégorie
 @Composable
 fun CategoryButton(text: String, icon: Painter, isSelected: Boolean, onClick: () -> Unit) {
     Column(
@@ -187,6 +193,7 @@ fun CategoryButton(text: String, icon: Painter, isSelected: Boolean, onClick: ()
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Texte de la catégorie
         Text(
             text = text,
             fontSize = 14.sp,
@@ -197,6 +204,7 @@ fun CategoryButton(text: String, icon: Painter, isSelected: Boolean, onClick: ()
     }
 }
 
+// Carrousel affichant une liste d'activités
 @Composable
 fun ActivityCarrousel(activities: List<Activity>) {
     if (activities.isNotEmpty()) {
@@ -219,6 +227,7 @@ fun ActivityCarrousel(activities: List<Activity>) {
             }
         }
     } else {
+        // Message affiché si aucune activité n'est disponible
         Text(
             text = "Aucune activité disponible.",
             fontSize = 18.sp,
@@ -227,7 +236,7 @@ fun ActivityCarrousel(activities: List<Activity>) {
     }
 }
 
-
+// Carte affichant les détails d'une activité
 @Composable
 fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
     val pageOffset = (pagerState.currentPage - index) + pagerState.currentPageOffsetFraction
@@ -254,7 +263,7 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Column {
-            // Image principale
+            // Image principale de l'activité
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -285,7 +294,7 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
                 }
             }
 
-            // Contenu texte
+            // Détails textuels sur l'activité
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = activity.name,
@@ -322,6 +331,7 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    //Partage et création du template de partage
                     Button(
                         onClick = {
                             val shareMessage = """

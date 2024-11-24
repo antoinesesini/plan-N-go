@@ -23,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import ca.uqac.etu.planngo.screens.menuScreens.CreateActivityScreen
 import ca.uqac.etu.planngo.screens.menuScreens.PreferencesScreen
 
+// Ecran principal du menu avec navigation interne
 @Composable
 fun MenuScreen(navController: NavController, darkTheme: Boolean, onDarkThemeToggle: (Boolean)-> Unit) {
     val innerNavController = rememberNavController()
@@ -50,6 +51,7 @@ fun MenuScreen(navController: NavController, darkTheme: Boolean, onDarkThemeTogg
     }
 }
 
+// Contenu du menu principal
 @Composable
 fun MenuContent(innerNavController: NavController) {
     LazyColumn(
@@ -70,6 +72,7 @@ fun MenuContent(innerNavController: NavController) {
         }
 
         item {
+            // Section pour gérer les activités
             SettingsSection(title = "Gestion des Activités") {
                 SettingsItem(
                     icon = Icons.Filled.Add,
@@ -79,6 +82,7 @@ fun MenuContent(innerNavController: NavController) {
             }
         }
         item {
+            // Section pour les paramètres de l'application
             SettingsSection(title = "Paramètres") {
                 SettingsItem(
                     icon = Icons.Filled.Settings,
@@ -90,7 +94,7 @@ fun MenuContent(innerNavController: NavController) {
     }
 }
 
-
+// Section pour un groupe d'éléments dans le menu
 @Composable
 fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
     Text(
@@ -110,6 +114,7 @@ fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) 
     }
 }
 
+// Un élément de menu avec un icône et un titre
 @Composable
 fun SettingsItem(icon: ImageVector, title: String, onClick: () -> Unit, hasToggle: Boolean = false) {
     Row(
@@ -133,6 +138,7 @@ fun SettingsItem(icon: ImageVector, title: String, onClick: () -> Unit, hasToggl
             modifier = Modifier.weight(1f)
         )
         if (hasToggle) {
+            // Toggle switch (par exemple, pour activer/désactiver un paramètre)
             Switch(
                 checked = true,
                 onCheckedChange = {}
@@ -140,3 +146,4 @@ fun SettingsItem(icon: ImageVector, title: String, onClick: () -> Unit, hasToggl
         }
     }
 }
+

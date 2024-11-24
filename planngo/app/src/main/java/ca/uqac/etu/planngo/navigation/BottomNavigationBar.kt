@@ -20,18 +20,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
+// Classe pour représenter un élément de navigation inférieur
 data class BottomNavigationItem(
     val title: String,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 )
 
+// Barre de navigation inférieure avec des éléments et un bouton d'action flottant (FAB)
 @Composable
 fun BottomNavigationBar(
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit,
     onFabClick: () -> Unit
 ) {
+    // Liste des éléments à afficher dans la barre de navigation
     val items = listOf(
         BottomNavigationItem(
             title = "Map",
@@ -55,6 +58,7 @@ fun BottomNavigationBar(
         )
     )
 
+    // Conteneur principal de la barre de navigation
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,6 +66,7 @@ fun BottomNavigationBar(
             .background(Color.White),
         contentAlignment = Alignment.BottomCenter
     ) {
+        // Ligne contenant les éléments de navigation et l'espace pour le FAB
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -69,7 +74,7 @@ fun BottomNavigationBar(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left two navigation items
+            // Afficher les deux premiers éléments de navigation à gauche
             items.take(2).forEachIndexed { index, item ->
                 NavigationBarItem(
                     selected = selectedIndex == index,
@@ -84,9 +89,9 @@ fun BottomNavigationBar(
                 )
             }
 
-            Spacer(modifier = Modifier.width(56.dp)) // Space for FAB
+            Spacer(modifier = Modifier.width(56.dp)) // Espace pour le FAB
 
-            
+            // Afficher les deux derniers éléments de navigation à droite
             items.drop(2).forEachIndexed { index, item ->
                 NavigationBarItem(
                     selected = selectedIndex == index + 3,
@@ -102,6 +107,7 @@ fun BottomNavigationBar(
             }
         }
 
+        // Bouton d'action flottant (FAB) au centre
         FloatingActionButton(
             onClick = onFabClick,
             modifier = Modifier
@@ -113,3 +119,4 @@ fun BottomNavigationBar(
         }
     }
 }
+

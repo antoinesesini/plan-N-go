@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CalendarScreen() {
+    // Récupérer le contexte et définir les états
     val context = LocalContext.current
     val plannedDays = remember { mutableStateListOf<DayPlan>() }
     var showDetailsModal by remember { mutableStateOf(false) }
@@ -32,28 +33,33 @@ fun CalendarScreen() {
         }
     }
 
+    // Conteneur principal avec un alignement central
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter
     ) {
         if (plannedDays.isEmpty()) {
+            // Message lorsque aucune journée n'est planifiée
             Text(
                 text = "Aucune journée planifiée pour l'instant.",
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.align(Alignment.Center)
             )
         } else {
+            // Liste des journées planifiées avec LazyColumn
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 plannedDays.forEach { dayPlan ->
                     item {
+                        // Carte représentant chaque journée planifiée
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(8.dp)
                                 .pointerInput(Unit) {
+                                    // Gérer les actions de tap et long press
                                     detectTapGestures(
                                         onLongPress = {
                                             selectedDay = dayPlan
@@ -71,6 +77,7 @@ fun CalendarScreen() {
                                 modifier = Modifier.padding(16.dp),
                                 horizontalAlignment = Alignment.Start
                             ) {
+                                // Affichage de la date et de l'heure de la journée
                                 Text(
                                     text = "Le ${dayPlan.date}",
                                     style = MaterialTheme.typography.bodyLarge,
@@ -120,6 +127,7 @@ fun CalendarScreen() {
             confirmButton = {
                 TextButton(onClick = {
                     coroutineScope.launch {
+                        // Supprimer la journée planifiée du DataStore et de la liste
                         selectedDay?.let { day ->
                             LocalStorage.removePlannedDay(context, day)
                             plannedDays.remove(day)

@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PlanScreen() {
+    // Variables d'état pour gérer la date, l'heure, la durée, etc.
     var date by remember { mutableStateOf(String()) }
     var startTime by remember { mutableStateOf(String()) }
     var duration by remember { mutableIntStateOf(2) } // duration is an integer
@@ -30,13 +31,16 @@ fun PlanScreen() {
     var isTimeError by remember { mutableStateOf(false) }
     var isDurationError by remember { mutableStateOf(false) }
 
+    // Initialisation du calendrier et du contexte
     val calendar = Calendar.getInstance()
     val context = LocalContext.current
     val activityViewModel = ActivityViewModel()
     val activities = activityViewModel.getActivities()
 
+    // Coroutine scope pour gérer les appels asynchrones
     val scope = rememberCoroutineScope()
 
+    // Conteneur principal de la vue
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -45,6 +49,7 @@ fun PlanScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Titre de la page
             Text(
                 text = "Plannification de journées 🤖",
                 fontSize = 27.sp,
@@ -53,7 +58,7 @@ fun PlanScreen() {
             )
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Date Picker
+            // Sélection de la date via un bouton déclenchant le DatePickerDialog
             Button(onClick = {
                 DatePickerDialog(
                     context,
@@ -74,6 +79,7 @@ fun PlanScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Sélection de l'heure via un bouton déclenchant le TimePickerDialog
             Button(onClick = {
                 TimePickerDialog(
                     context,
@@ -94,6 +100,7 @@ fun PlanScreen() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Affichage de la durée et du Slider pour la modifier
             Text(
                 text = "Durée (en heures) : $duration",
                 style = MaterialTheme.typography.bodyLarge,
@@ -114,12 +121,15 @@ fun PlanScreen() {
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Bouton pour valider la planification de l'activité
             Button(onClick = {
+                // Vérification des erreurs de date, heure et durée
                 isDateError = date.isEmpty()
                 isTimeError = startTime.isEmpty()
                 isDurationError = duration <= 0
 
                 if (!isDateError && !isTimeError && !isDurationError) {
+                    // Planification des activités
                     plannedActivities = planActivities(activities, duration, startTime)
                     showModal = true
 
@@ -139,7 +149,7 @@ fun PlanScreen() {
         }
     }
 
-    // Modal
+    // Modal affichant les activités planifiées
     if (showModal) {
         AlertDialog(
             onDismissRequest = { showModal = false },
@@ -160,6 +170,7 @@ fun PlanScreen() {
     }
 }
 
+// Fonction de planification des activités en fonction de la durée et de l'heure de départ
 fun planActivities(activities: List<Activity>, duration: Int, startTime: String): List<String> {
     val plannedActivities = mutableListOf<String>()
 
@@ -167,6 +178,7 @@ fun planActivities(activities: List<Activity>, duration: Int, startTime: String)
     val (startHour, startMinute) = startTime.split(":").map { it.toInt() }
     val startInMinutes = startHour * 60 + startMinute
 
+    // Parcours des activités pour vérifier si elles peuvent être planifiées
     for (activity in activities) {
         // Convertir les horaires de l'activité en minutes
         val activityStart = activity.hours["start"]?.split(":")?.map { it.toInt() }
@@ -190,4 +202,5 @@ fun planActivities(activities: List<Activity>, duration: Int, startTime: String)
 
     return plannedActivities
 }
+
 
