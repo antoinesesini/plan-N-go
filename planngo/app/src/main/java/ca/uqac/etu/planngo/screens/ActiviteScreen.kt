@@ -37,7 +37,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import kotlin.Int
 
-// Screen principale affichant les activités et la bannière de promotion
+// Écran principal affichant les activités et la bannière de promotion
 @Composable
 fun ActiviteScreen() {
     val activityViewModel: ActivityViewModel = viewModel()
@@ -54,6 +54,7 @@ fun ActiviteScreen() {
             text = "Activités",
             fontSize = 27.sp,
             fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(top = 30.dp, start = 10.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -83,7 +84,7 @@ fun PromotionBanner() {
             .height(120.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+            containerColor = MaterialTheme.colorScheme.primaryContainer
         )
     ) {
         Row(
@@ -108,7 +109,7 @@ fun PromotionBanner() {
                 Text(
                     text = "Découvrez des idées et rejoignez-nous !",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
 
@@ -119,7 +120,7 @@ fun PromotionBanner() {
                 modifier = Modifier
                     .size(75.dp)
                     .weight(1f),
-//                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop
             )
         }
     }
@@ -231,7 +232,7 @@ fun ActivityCarrousel(activities: List<Activity>) {
         Text(
             text = "Aucune activité disponible.",
             fontSize = 18.sp,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -258,7 +259,7 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
             .fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
@@ -306,7 +307,7 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
                 Text(
                     text = activity.description,
                     fontSize = 14.sp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.padding(vertical = 4.dp),
                     maxLines = 2
                 )
@@ -315,13 +316,13 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
                 Text(
                     text = "Horaires : ${activity.hours["start"]} - ${activity.hours["end"]}",
                     fontSize = 14.sp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
                 Text(
                     text = "Durée : ${activity.duration} heure(s)",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -331,7 +332,7 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    //Partage et création du template de partage
+                    // Partage de l'activité
                     Button(
                         onClick = {
                             val shareMessage = """
@@ -367,13 +368,13 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = Color.White
+                            contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
                         modifier = Modifier.padding(8.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Share,
-                            contentDescription = "Share Icon",
+                            contentDescription = "Partager",
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
@@ -384,4 +385,3 @@ fun ActivityCard(index: Int, pagerState: PagerState, activity: Activity) {
         }
     }
 }
-

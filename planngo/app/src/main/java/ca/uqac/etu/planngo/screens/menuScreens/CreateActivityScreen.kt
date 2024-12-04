@@ -11,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -42,7 +41,7 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
     var startHour by remember { mutableStateOf("") }
     var endHour by remember { mutableStateOf("") }
 
-    //Dialogues d'affichage
+    // Dialogues d'affichage
     var showAddressErrorDialog by remember { mutableStateOf(false) }
     var showConfirmationDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
@@ -51,23 +50,18 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
     val calendar = Calendar.getInstance()
 
     fun validateFields(): Boolean {
-        if (name.isBlank() || startHour.isBlank() || endHour.isBlank() || address.isBlank()) {
-            return false
-        }
-        return true
+        return name.isNotBlank() && startHour.isNotBlank() && endHour.isNotBlank() && address.isNotBlank()
     }
 
     // Fonction pour ajouter une activité
     fun createActivity() {
-
         if (!validateFields()) {
             showErrorDialog = true
             return
         }
 
-        // Utiliser la fonction getAdresseFromCoordinates pour obtenir les coordonnées de localisation
         CoroutineScope(Dispatchers.Main).launch {
-            val coordinates: Pair<Double,Double>? = AddressToCoordinates().getCoordinatesFromAddress(address)
+            val coordinates = AddressToCoordinates().getCoordinatesFromAddress(address)
             if (coordinates == null) {
                 showAddressErrorDialog = true
             } else {
@@ -88,8 +82,6 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
                 showConfirmationDialog = true
             }
         }
-
-
     }
 
     Scaffold { paddingValues ->
@@ -98,6 +90,7 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // Barre de titre
             item {
                 Row(
                     modifier = Modifier
@@ -109,7 +102,7 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Retour",
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -117,12 +110,16 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
                         text = "Créer une Activité",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
-            item { // Champ pour le nom de l'activité
+
+            // Formulaire
+            item {
                 Text("Informations et localisation", style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
@@ -132,7 +129,6 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Champ pour la description
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
@@ -142,14 +138,10 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Sélection du type d'activité
-                DropdownMenuActivityType(type) { selectedType ->
-                    type = selectedType
-                }
+                DropdownMenuActivityType(type) { selectedType -> type = selectedType }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Champ pour l'adresse
                 OutlinedTextField(
                     value = address,
                     onValueChange = { address = it },
@@ -159,8 +151,8 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-
-                // Duration Slider
+                // Durée
+                Text(text = "Durée (heures) : $duration")
                 Slider(
                     value = duration.toFloat(),
                     onValueChange = { duration = it.toInt() },
@@ -168,51 +160,49 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
                     steps = 11,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Text(text = "Durée (heures) : $duration")
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Champ pour la difficulté
+                // Difficulté
+                Text(text = "Difficulté : $difficulty")
                 Slider(
                     value = difficulty.toFloat(),
                     onValueChange = { difficulty = it.toInt() },
                     valueRange = 1f..5f,
-                    steps = 3,
+                    steps = 4,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Text(text = "Difficulté : $difficulty")
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Heure d'ouverture
+                // Horaires
                 Text("Horaires", style = MaterialTheme.typography.titleMedium)
 
                 Button(onClick = {
                     TimePickerDialog(
                         context,
                         { _, hourOfDay, minute ->
-                            val formattedTime = String.format("%02d:%02d", hourOfDay, minute)
-                            startHour = formattedTime
+                            startHour = String.format("%02d:%02d", hourOfDay, minute)
                         },
                         calendar.get(Calendar.HOUR_OF_DAY),
                         calendar.get(Calendar.MINUTE),
-                        true // 24-hour format
+                        true
                     ).show()
                 }) {
                     Text(if (startHour.isEmpty()) "Heure d'ouverture" else "Ouverture : $startHour")
                 }
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(onClick = {
                     TimePickerDialog(
                         context,
                         { _, hourOfDay, minute ->
-                            val formattedTime = String.format("%02d:%02d", hourOfDay, minute)
-                            endHour = formattedTime
+                            endHour = String.format("%02d:%02d", hourOfDay, minute)
                         },
                         calendar.get(Calendar.HOUR_OF_DAY),
                         calendar.get(Calendar.MINUTE),
-                        true // 24-hour format
+                        true
                     ).show()
                 }) {
                     Text(if (endHour.isEmpty()) "Heure de fermeture" else "Fermeture : $endHour")
@@ -241,7 +231,6 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Affichage des éléments requis ajoutés
                 requiredItems.forEach { item ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -254,6 +243,8 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
                     }
                 }
             }
+
+            // Bouton pour créer l'activité
             item {
                 Box(
                     modifier = Modifier
@@ -269,6 +260,8 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
                 Spacer(modifier = Modifier.height(100.dp))
             }
         }
+
+        // Dialogues
         if (showConfirmationDialog) {
             AlertDialog(
                 onDismissRequest = { showConfirmationDialog = false },
@@ -277,12 +270,11 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
                 confirmButton = {
                     TextButton(onClick = {
                         showConfirmationDialog = false
-                        navController.navigateUp() // Naviguer en arrière après confirmation
+                        navController.navigateUp()
                     }) {
                         Text("OK")
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
+                }
             )
         }
 
@@ -290,13 +282,12 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
             AlertDialog(
                 onDismissRequest = { showErrorDialog = false },
                 title = { Text("Erreur") },
-                text = { Text("Veuillez remplir tous les champs obligatoires : nom, horaires, durée et localisation") },
+                text = { Text("Veuillez remplir tous les champs obligatoires.") },
                 confirmButton = {
                     TextButton(onClick = { showErrorDialog = false }) {
                         Text("OK")
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
+                }
             )
         }
 
@@ -304,13 +295,12 @@ fun CreateActivityScreen(activityViewModel: ActivityViewModel = viewModel(), nav
             AlertDialog(
                 onDismissRequest = { showAddressErrorDialog = false },
                 title = { Text("Erreur") },
-                text = { Text("Impossible de trouver les coordonnées pour l'adresse saisie.") },
+                text = { Text("Adresse non trouvée.") },
                 confirmButton = {
                     TextButton(onClick = { showAddressErrorDialog = false }) {
                         Text("OK")
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
+                }
             )
         }
     }
@@ -338,8 +328,9 @@ fun DropdownMenuActivityType(
                 DropdownMenuItem(
                     text = { Text(type.name) },
                     onClick = {
-                    onTypeSelected(type)
-                    expanded = false }
+                        onTypeSelected(type)
+                        expanded = false
+                    }
                 )
             }
         }

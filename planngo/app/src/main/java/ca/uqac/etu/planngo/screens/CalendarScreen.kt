@@ -1,8 +1,10 @@
 package ca.uqac.etu.planngo.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,6 +13,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import ca.uqac.etu.planngo.models.DayPlan
 import ca.uqac.etu.planngo.data.LocalStorage
 import kotlinx.coroutines.launch
@@ -35,29 +38,44 @@ fun CalendarScreen() {
 
     // Conteneur principal avec un alignement central
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.TopCenter
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
     ) {
-        if (plannedDays.isEmpty()) {
-            // Message lorsque aucune journée n'est planifiée
+        Column(modifier = Modifier.fillMaxSize()) {
+            Spacer(modifier = Modifier.height(32.dp))
             Text(
-                text = "Aucune journée planifiée pour l'instant.",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.align(Alignment.Center)
+                text = "Mes planifications",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
             )
-        } else {
-            // Liste des journées planifiées avec LazyColumn
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                plannedDays.forEach { dayPlan ->
-                    item {
+            Spacer(modifier = Modifier.width(16.dp))
+
+            if (plannedDays.isEmpty()) {
+                // Message lorsque aucune journée n'est planifiée
+                Text(
+                    text = "Aucune journée planifiée pour l'instant.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            } else {
+                // Liste des journées planifiées avec LazyColumn
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(plannedDays.size) { index ->
+                        val dayPlan = plannedDays[index]
+
                         // Carte représentant chaque journée planifiée
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(8.dp)
+//                                .background(MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(8.dp))
                                 .pointerInput(Unit) {
                                     // Gérer les actions de tap et long press
                                     detectTapGestures(
@@ -71,6 +89,10 @@ fun CalendarScreen() {
                                         }
                                     )
                                 },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                contentColor = MaterialTheme.colorScheme.onSurface
+                            ),
                             elevation = CardDefaults.cardElevation(4.dp)
                         ) {
                             Column(
@@ -80,7 +102,7 @@ fun CalendarScreen() {
                                 // Affichage de la date et de l'heure de la journée
                                 Text(
                                     text = "Le ${dayPlan.date}",
-                                    style = MaterialTheme.typography.bodyLarge,
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -105,7 +127,7 @@ fun CalendarScreen() {
                     Text("Fermer")
                 }
             },
-            title = { Text("Détails de la journée") },
+            title = { Text("Détails de la journée", color = MaterialTheme.colorScheme.primary) },
             text = {
                 Column {
                     Text("Date : ${selectedDay!!.date}", style = MaterialTheme.typography.bodyLarge)
@@ -116,7 +138,9 @@ fun CalendarScreen() {
                         Text("- $activity", style = MaterialTheme.typography.bodySmall)
                     }
                 }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            textContentColor = MaterialTheme.colorScheme.onSurface
         )
     }
 
@@ -135,7 +159,7 @@ fun CalendarScreen() {
                         showDeleteModal = false
                     }
                 }) {
-                    Text("Supprimer")
+                    Text("Supprimer", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
@@ -143,12 +167,12 @@ fun CalendarScreen() {
                     Text("Annuler")
                 }
             },
-            title = { Text("Suppression de planification") },
+            title = { Text("Suppression de planification", color = MaterialTheme.colorScheme.primary) },
             text = {
                 Text("Êtes-vous sûr de vouloir supprimer la journée du ${selectedDay!!.date} ? Cette action est irréversible.")
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            textContentColor = MaterialTheme.colorScheme.onSurface
         )
     }
 }
-
-

@@ -8,7 +8,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -31,67 +30,73 @@ fun PreferencesScreen(
     val scope = rememberCoroutineScope() // CoroutineScope pour les actions asynchrones
     val context = LocalContext.current // Contexte local pour l'accès à LocalStorage
 
-    // Liste déroulante affichant les préférences
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.Start
-    ) {
-        // En-tête avec bouton retour et titre
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { navController.navigateUp() }) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "Retour",
-                        tint = Color.Black
+    Scaffold { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp),
+        ) {
+            // En-tête avec bouton retour et titre
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Retour",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Préférences et réglages",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Préférences et réglages",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
             }
-        }
 
-        // Option pour activer/désactiver le mode sombre
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = "Mode sombre", style = MaterialTheme.typography.bodyLarge)
-                Switch(
-                    checked = isDarkTheme,
-                    onCheckedChange = { isChecked ->
-                        isDarkTheme = isChecked
-                        onDarkThemeToggle(isDarkTheme)
-                    }
-                )
+            // Option pour activer/désactiver le mode sombre
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Mode sombre", style = MaterialTheme.typography.bodyLarge)
+                    Switch(
+                        checked = isDarkTheme,
+                        onCheckedChange = { isChecked ->
+                            isDarkTheme = isChecked
+                            onDarkThemeToggle(isDarkTheme)
+                        }
+                    )
+                }
             }
-        }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
 
-        // Bouton pour effacer les données locales
-        item {
-            Button(
-                onClick = { showConfirmationDialog = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            ) {
-                Text(text = "Effacer les données locales")
+            // Bouton pour effacer les données locales
+            item {
+                Button(
+                    onClick = { showConfirmationDialog = true },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                ) {
+                    Text(text = "Effacer les données locales")
+                }
             }
         }
     }
@@ -108,17 +113,27 @@ fun PreferencesScreen(
                         showConfirmationDialog = false
                     }
                 }) {
-                    Text("Confirmer")
+                    Text(
+                        text = "Confirmer",
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             },
             dismissButton = {
                 // Bouton d'annulation
                 TextButton(onClick = { showConfirmationDialog = false }) {
-                    Text("Annuler")
+                    Text(text = "Annuler")
                 }
             },
             title = { Text("Effacement des données") },
-            text = { Text("Êtes-vous sûr de vouloir effacer toutes les données locales ? Cette action est irréversible.") }
+            text = {
+                Text(
+                    "Êtes-vous sûr de vouloir effacer toutes les données locales ? Cette action est irréversible.",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 4.dp
         )
     }
 }

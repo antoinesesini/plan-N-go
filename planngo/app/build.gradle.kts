@@ -83,6 +83,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation (libs.gson)
     implementation(libs.okhttp)
+    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

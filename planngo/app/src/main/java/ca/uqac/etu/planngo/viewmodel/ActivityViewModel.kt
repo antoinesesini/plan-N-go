@@ -1,5 +1,7 @@
 package ca.uqac.etu.planngo.viewmodel
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -56,6 +58,22 @@ class ActivityViewModel : ViewModel() {
     // Fonction pour obtenir la liste des types d'activités distincts
     fun getActivityTypes(): List<ActivityType> {
         return activities.map { it.type }.distinct()
+    }
+
+    private val _filteredActivities = MutableLiveData<List<Activity>>()
+    val filteredActivities: LiveData<List<Activity>> = _filteredActivities
+
+
+    // Méthode pour rechercher des activités
+    fun searchActivities(query: String) {
+        if (query.isEmpty()) {
+            // Si la requête est vide, afficher toutes les activités
+            _filteredActivities.postValue(activities)
+        } else {
+            // Sinon, filtrer les activités par nom ou autre critère
+            val filtered = activities.filter { it.name.contains(query, ignoreCase = true) }
+            _filteredActivities.postValue(filtered)
+        }
     }
 
 }

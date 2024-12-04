@@ -11,7 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,9 +23,9 @@ import androidx.navigation.compose.rememberNavController
 import ca.uqac.etu.planngo.screens.menuScreens.CreateActivityScreen
 import ca.uqac.etu.planngo.screens.menuScreens.PreferencesScreen
 
-// Ecran principal du menu avec navigation interne
+// Écran principal du menu avec navigation interne
 @Composable
-fun MenuScreen(navController: NavController, darkTheme: Boolean, onDarkThemeToggle: (Boolean)-> Unit) {
+fun MenuScreen(navController: NavController, darkTheme: Boolean, onDarkThemeToggle: (Boolean) -> Unit) {
     val innerNavController = rememberNavController()
 
     Box(
@@ -38,14 +38,17 @@ fun MenuScreen(navController: NavController, darkTheme: Boolean, onDarkThemeTogg
             composable("menu") {
                 MenuContent(innerNavController)
             }
-            composable("create_activity") { CreateActivityScreen(navController = innerNavController) }
+            composable("create_activity") {
+                CreateActivityScreen(navController = innerNavController)
+            }
             composable("preferences") {
                 PreferencesScreen(
                     navController = innerNavController,
                     darkTheme = darkTheme,
                     onDarkThemeToggle = { isDarkThemeEnabled ->
                         onDarkThemeToggle(isDarkThemeEnabled)
-                    })
+                    }
+                )
             }
         }
     }
@@ -66,6 +69,7 @@ fun MenuContent(innerNavController: NavController) {
                 text = "Plan N'Go",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier
                     .padding(vertical = 16.dp)
             )
@@ -81,6 +85,7 @@ fun MenuContent(innerNavController: NavController) {
                 )
             }
         }
+
         item {
             // Section pour les paramètres de l'application
             SettingsSection(title = "Paramètres") {
@@ -101,13 +106,13 @@ fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) 
         text = title,
         fontSize = 14.sp,
         fontWeight = FontWeight.SemiBold,
-        color = Color.Gray,
+        color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
     )
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White, shape = RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(8.dp))
             .padding(vertical = 8.dp)
     ) {
         content()
@@ -121,6 +126,8 @@ fun SettingsItem(icon: ImageVector, title: String, onClick: () -> Unit, hasToggl
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
+            .background(MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(8.dp))
+//            .shadow(elevation = 10.dp, shape = RoundedCornerShape(8.dp))
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -128,22 +135,25 @@ fun SettingsItem(icon: ImageVector, title: String, onClick: () -> Unit, hasToggl
             imageVector = icon,
             contentDescription = title,
             modifier = Modifier.size(24.dp),
-            tint = Color(0xFF333333)
+            tint = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = title,
             fontSize = 16.sp,
-            color = Color(0xFF333333),
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.weight(1f)
         )
         if (hasToggle) {
             // Toggle switch (par exemple, pour activer/désactiver un paramètre)
             Switch(
                 checked = true,
-                onCheckedChange = {}
+                onCheckedChange = {},
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     }
 }
-

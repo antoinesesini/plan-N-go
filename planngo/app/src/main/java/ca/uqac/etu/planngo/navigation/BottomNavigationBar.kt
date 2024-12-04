@@ -16,7 +16,6 @@ import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
@@ -47,7 +46,7 @@ fun BottomNavigationBar(
             unselectedIcon = Icons.Outlined.List
         ),
         BottomNavigationItem(
-            title = "Mes planifications",
+            title = "Agenda",
             selectedIcon = Icons.Filled.CalendarToday,
             unselectedIcon = Icons.Outlined.CalendarToday
         ),
@@ -63,8 +62,8 @@ fun BottomNavigationBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(80.dp)
-            .background(Color.White),
-        contentAlignment = Alignment.BottomCenter
+            .background(MaterialTheme.colorScheme.surfaceContainerLow),
+        contentAlignment = Alignment.BottomCenter,
     ) {
         // Ligne contenant les éléments de navigation et l'espace pour le FAB
         Row(
@@ -80,6 +79,12 @@ fun BottomNavigationBar(
                     selected = selectedIndex == index,
                     onClick = { onItemSelected(index) },
                     label = { Text(item.title) },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary, // Couleur pour l'icône sélectionnée
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant, // Couleur pour l'icône non sélectionnée
+                        selectedTextColor = MaterialTheme.colorScheme.primary, // Couleur du texte sélectionné
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant // Couleur du texte non sélectionné
+                    ),
                     icon = {
                         Icon(
                             imageVector = if (selectedIndex == index) item.selectedIcon else item.unselectedIcon,
@@ -97,6 +102,12 @@ fun BottomNavigationBar(
                     selected = selectedIndex == index + 3,
                     onClick = { onItemSelected(index + 3) },
                     label = { Text(item.title) },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
                     icon = {
                         Icon(
                             imageVector = if (selectedIndex == index + 3) item.selectedIcon else item.unselectedIcon,
@@ -113,10 +124,12 @@ fun BottomNavigationBar(
             modifier = Modifier
                 .size(56.dp)
                 .offset(y = (-41).dp),
-            containerColor = MaterialTheme.colorScheme.primary
+            containerColor = MaterialTheme.colorScheme.primary, // Couleur du bouton d'action
+            contentColor = MaterialTheme.colorScheme.onPrimary // Couleur de l'icône du bouton
         ) {
             Icon(imageVector = Icons.Filled.Add, contentDescription = "Envoyer")
         }
     }
 }
+
 

@@ -224,17 +224,8 @@ fun MapScreen(latitude: Double, longitude: Double) {
                 .padding(16.dp)
         ) {
             // Barre de recherche
-            FloatingSearchBar()
+            FloatingSearchBar(viewModel = activityViewModel)
 
-           //// Bouton d'ajout d'activité (en haut à droite)
-           //Icon(
-           //    imageVector = Icons.Filled.Add,  // Icône d'ajout
-           //    contentDescription = "Ajouter une activité",
-           //    modifier = Modifier
-           //        .size(36.dp)
-           //        .align(Alignment.End)  // Positionné en haut à droite
-           //        .clickable {}
-           //)
         }
 
         selectedActivity?.let { activity ->
@@ -249,7 +240,7 @@ fun MapScreen(latitude: Double, longitude: Double) {
             ) {
                 Box(
                     modifier = Modifier
-                        .background(Color.White)
+                        .background(MaterialTheme.colorScheme.surface)
                         .padding(16.dp)
                         .fillMaxWidth(0.85f)
                 ) {
@@ -268,7 +259,7 @@ fun MapScreen(latitude: Double, longitude: Double) {
                                 modifier = Modifier
                                     .size(48.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0x66000000))
+                                    .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
                                     .clickable { selectedActivity = null }
                                     .padding(8.dp),
                                 contentAlignment = Alignment.Center
@@ -277,7 +268,7 @@ fun MapScreen(latitude: Double, longitude: Double) {
                                     imageVector = Icons.Filled.Close,
                                     contentDescription = "Fermer",
                                     modifier = Modifier.size(32.dp),
-                                    tint = Color.White
+                                    tint = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -289,7 +280,7 @@ fun MapScreen(latitude: Double, longitude: Double) {
                             modifier = Modifier
                                 .size(48.dp)
                                 .padding(bottom = 16.dp),
-                            tint = Color.Unspecified
+                            tint = MaterialTheme.colorScheme.primary
                         )
 
                         // Titre de l'activité
@@ -324,13 +315,17 @@ fun MapScreen(latitude: Double, longitude: Double) {
                                             model = activity.pictures[page],
                                             contentDescription = "Image de l'activité",
                                             contentScale = ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize(),
-                                            error = painterResource(id = R.drawable.custom_logo),
-                                            placeholder = painterResource(id = R.drawable.custom_logo)
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .border(
+                                                    width = 1.dp,
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    shape = RoundedCornerShape(12.dp)
+                                                )
                                         )
                                     }
                                 }
-
                                 // Flèche gauche
                                 if (pagerState.currentPage > 0) {
                                     Box(
@@ -349,7 +344,6 @@ fun MapScreen(latitude: Double, longitude: Double) {
                                         )
                                     }
                                 }
-
                                 // Flèche droite
                                 if (pagerState.currentPage < activity.pictures.lastIndex) {
                                     Box(
@@ -370,10 +364,6 @@ fun MapScreen(latitude: Double, longitude: Double) {
                                 }
                             }
                         }
-
-
-
-
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Informations textuelles de l'activité
@@ -390,7 +380,6 @@ fun MapScreen(latitude: Double, longitude: Double) {
                                 modifier = Modifier.padding(bottom = 8.dp)
                             )
                         }
-
                         // Équipements requis
                         if (activity.required.isNotEmpty()) {
                             Text(
